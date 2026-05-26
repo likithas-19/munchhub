@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munch Hub - My Cart</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="dashboard-sidebar d-flex flex-column justify-content-between">
+            <div>
+                <!-- Brand Title -->
+                <a href="index.html" class="d-flex align-items-center gap-2 fw-bold text-primary text-decoration-none mb-4" style="font-size: 1.5rem;">
+                    <i class="fa-solid fa-pizza-slice text-secondary"></i> MunchHub
+                </a>
+                
+                <!-- Profile Indicator -->
+                <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
+                    <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80" alt="Student Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="overflow-hidden">
+                        <h6 class="mb-0 fw-bold text-truncate profile-welcome-name">Rahul Verma</h6>
+                        <span class="text-muted small text-truncate d-block profile-welcome-college">NIT Campus</span>
+                    </div>
+                </div>
+
+                <!-- Menu Links -->
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item">
+                        <a href="dashboard.html" class="sidebar-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="mood-meals.html" class="sidebar-link"><i class="fa-solid fa-face-smile"></i> Mood Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="study-meals.html" class="sidebar-link"><i class="fa-solid fa-book"></i> Study Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="budget-meals.html" class="sidebar-link"><i class="fa-solid fa-wallet"></i> Budget Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="trending.html" class="sidebar-link"><i class="fa-solid fa-fire text-danger"></i> Trending Foods</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="group-order.html" class="sidebar-link"><i class="fa-solid fa-people-group"></i> Group Orders</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="profile.html" class="sidebar-link"><i class="fa-solid fa-user"></i> Profile</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="cart.html" class="sidebar-link active position-relative">
+                            <i class="fa-solid fa-cart-shopping"></i> My Cart
+                            <span class="position-absolute end-0 me-3 translate-middle-y badge rounded-pill bg-danger cart-count-badge font-weight-bold" style="font-size: 0.65rem; top: 50%;">0</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Logout Bottom -->
+            <div>
+                <hr class="border-secondary">
+                <a href="index.html" class="sidebar-link text-danger fw-semibold" onclick="localStorage.removeItem('munch_cart')"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Header -->
+            <div class="mb-5">
+                <span class="badge munch-badge badge-glow-primary mb-2"><i class="fa-solid fa-basket-shopping"></i> Solo Checkout Room</span>
+                <h2 class="fw-bold mb-1">Your Shopping Cart 🛒</h2>
+                <p class="text-secondary mb-0">Review items, adjust quantities, toggle bill splits, and place orders.</p>
+            </div>
+
+            <!-- Empty Cart Alert -->
+            <div id="empty-cart-alert" class="text-center py-5 glass-card" style="display: none;">
+                <i class="fa-solid fa-cart-arrow-down text-muted display-1 mb-4"></i>
+                <h4 class="fw-bold text-secondary">Your cart is currently empty!</h4>
+                <p class="text-muted mb-4">Head over to the smart menu to browse and discover delicious campus meals.</p>
+                <a href="menu.html" class="munch-btn munch-btn-primary text-decoration-none py-3 px-5 fs-5">
+                    Browse Smart Menu
+                </a>
+            </div>
+
+            <!-- Active Cart Layout -->
+            <div class="row g-5" id="active-cart-row">
+                <!-- Left Column: Table of Cart Items -->
+                <div class="col-lg-8">
+                    <div class="card glass-card p-4">
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr class="small text-secondary">
+                                        <th colspan="2">MEAL DESCRIPTION</th>
+                                        <th>PRICE</th>
+                                        <th>QUANTITY</th>
+                                        <th>SUBTOTAL</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cart-table-body">
+                                    <!-- Injected dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Billing Summary & Bill Split Option -->
+                <div class="col-lg-4">
+                    <!-- Bill Summary Card -->
+                    <div class="card glass-card p-4 mb-4">
+                        <h5 class="fw-bold mb-4">Summary Bill</h5>
+                        
+                        <div class="d-flex justify-content-between mb-2 small text-secondary">
+                            <span>Subtotal Items</span>
+                            <span class="fw-bold">₹<span id="billSubtotal">0</span></span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3 small text-secondary">
+                            <span>Campus Canteen Convenience</span>
+                            <span class="text-success fw-bold">FREE</span>
+                        </div>
+                        
+                        <hr class="border-light-subtle">
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <span class="fw-bold">Grand Total</span>
+                            <span class="h4 text-primary font-weight-bold mb-0">₹<span id="billGrandTotal">0</span></span>
+                        </div>
+
+                        <!-- Checkbox Split Option -->
+                        <div class="p-3 bg-light rounded-3 border mb-4">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="enableSplitCheckbox">
+                                <label class="form-check-label fw-bold text-dark small" for="enableSplitCheckbox"><i class="fa-solid fa-receipt text-primary me-1"></i> Equal Roommate Split</label>
+                            </div>
+                            
+                            <!-- Split configuration form -->
+                            <div id="splitConfigForm" style="display: none;">
+                                <div class="mb-3">
+                                    <label class="form-label small text-secondary fw-semibold">SPLIT AMONG FRIENDS</label>
+                                    <input type="number" id="splitCountInput" class="form-control munch-input py-1" min="2" max="10" value="2">
+                                </div>
+                                <div class="d-flex justify-content-between text-dark font-weight-bold border-top border-light-subtle pt-2 small">
+                                    <span>Each Person Owes:</span>
+                                    <span class="text-primary">₹<span id="splitOwesAmount">0</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Place Order Actions -->
+                        <button id="cartCheckoutBtn" class="munch-btn munch-btn-primary w-100 py-3 mb-2">
+                            Place Order & Pay <i class="fa-solid fa-credit-card ms-2"></i>
+                        </button>
+                        <p class="text-muted small text-center mb-0 mt-2"><i class="fa-solid fa-shield-halved text-success"></i> Secured simulated campus cash check</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- UPI QR Code Payment Modal -->
+    <div class="modal fade" id="upiPaymentModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="upiPaymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-card border border-light-subtle bg-slate-900 text-white p-4" style="background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(15px); border-radius: 24px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-primary" id="upiPaymentModalLabel"><i class="fa-solid fa-shield-halved text-success me-2"></i> Munch UPI Checkout</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <span class="text-white-50 small d-block mb-1">SCAN AND PAY TO INSTANTLY DISPATCH</span>
+                    <h3 class="fw-bold text-white mb-4">₹<span id="modalPaymentAmount">0</span></h3>
+                    
+                    <!-- Simulated Offline-Ready QR Code SVG -->
+                    <div class="p-3 bg-white rounded-4 d-inline-block shadow-lg mb-4 border border-light-subtle" style="width: 200px; height: 200px;">
+                        <svg viewBox="0 0 100 100" class="w-100 h-100">
+                            <!-- Background Grid simulation -->
+                            <rect width="100" height="100" fill="#ffffff"/>
+                            <!-- Corners markers -->
+                            <rect x="5" y="5" width="25" height="25" fill="#1e293b" rx="2"/>
+                            <rect x="9" y="9" width="17" height="17" fill="#ffffff"/>
+                            <rect x="13" y="13" width="9" height="9" fill="#1e293b"/>
+                            
+                            <rect x="70" y="5" width="25" height="25" fill="#1e293b" rx="2"/>
+                            <rect x="74" y="9" width="17" height="17" fill="#ffffff"/>
+                            <rect x="78" y="13" width="9" height="9" fill="#1e293b"/>
+                            
+                            <rect x="5" y="70" width="25" height="25" fill="#1e293b" rx="2"/>
+                            <rect x="9" y="74" width="17" height="17" fill="#ffffff"/>
+                            <rect x="13" y="78" width="9" height="9" fill="#1e293b"/>
+                            
+                            <!-- Random simulated data pixels for QR look -->
+                            <rect x="35" y="5" width="5" height="15" fill="#1e293b"/>
+                            <rect x="45" y="5" width="15" height="5" fill="#1e293b"/>
+                            <rect x="55" y="15" width="10" height="10" fill="#1e293b"/>
+                            
+                            <rect x="35" y="25" width="10" height="10" fill="#1e293b"/>
+                            <rect x="50" y="30" width="15" height="5" fill="#1e293b"/>
+                            
+                            <rect x="5" y="35" width="15" height="5" fill="#1e293b"/>
+                            <rect x="25" y="35" width="10" height="15" fill="#1e293b"/>
+                            <rect x="40" y="45" width="20" height="10" fill="#1e293b"/>
+                            <rect x="65" y="35" width="30" height="5" fill="#1e293b"/>
+                            
+                            <rect x="5" y="50" width="10" height="10" fill="#1e293b"/>
+                            <rect x="20" y="55" width="5" height="10" fill="#1e293b"/>
+                            <rect x="75" y="45" width="15" height="15" fill="#1e293b"/>
+                            
+                            <rect x="35" y="70" width="10" height="25" fill="#1e293b"/>
+                            <rect x="50" y="75" width="15" height="5" fill="#1e293b"/>
+                            <rect x="70" y="70" width="5" height="25" fill="#1e293b"/>
+                            <rect x="80" y="80" width="15" height="15" fill="#1e293b"/>
+                            <rect x="50" y="85" width="10" height="10" fill="#1e293b"/>
+                            
+                            <!-- UPI Brand Logo in Center -->
+                            <rect x="38" y="38" width="24" height="24" fill="#ffffff" rx="4"/>
+                            <circle cx="50" cy="50" r="9" fill="#6366f1"/>
+                            <text x="50" y="53" font-family="sans-serif" font-size="8" font-weight="bold" fill="#ffffff" text-anchor="middle">UPI</text>
+                        </svg>
+                    </div>
+                    
+                    <p class="small text-white-50 mb-3 px-3">Scan this code using any UPI app (GPay, PhonePe, Paytm, BHIM) to transfer to <code class="text-primary font-monospace">pay@munchhub</code></p>
+                    
+                    <!-- Simulated Loader Spinner (Hidden initially) -->
+                    <div id="paymentLoader" class="my-3" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span class="small text-white-50 d-block mt-2">Simulating payment handshake checks...</span>
+                    </div>
+                    
+                    <!-- Action Approval simulation button -->
+                    <button type="button" id="confirmPaymentBtn" class="munch-btn munch-btn-primary w-100 py-3 mt-2">
+                        Verify & Confirm Payment <i class="fa-solid fa-circle-check ms-1"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap & JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/daa-algorithms.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const tableBody = document.getElementById("cart-table-body");
+            const subtotalText = document.getElementById("billSubtotal");
+            const grandTotalText = document.getElementById("billGrandTotal");
+            
+            const emptyAlert = document.getElementById("empty-cart-alert");
+            const activeRow = document.getElementById("active-cart-row");
+
+            const splitCheckbox = document.getElementById("enableSplitCheckbox");
+            const splitForm = document.getElementById("splitConfigForm");
+            const splitCountInput = document.getElementById("splitCountInput");
+            const splitOwesText = document.getElementById("splitOwesAmount");
+
+            function renderCartPage() {
+                const cart = CartManager.get();
+
+                if (cart.length === 0) {
+                    emptyAlert.style.display = "block";
+                    activeRow.style.display = "none";
+                    return;
+                }
+
+                emptyAlert.style.display = "none";
+                activeRow.style.display = "flex";
+                tableBody.innerHTML = "";
+
+                cart.forEach(item => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td style="width: 80px;">
+                            <img src="${item.image}" class="rounded shadow-sm" style="width: 60px; height: 50px; object-fit: cover;">
+                        </td>
+                        <td>
+                            <h6 class="mb-0 fw-bold cursor-pointer" data-food-id="${item.id}">${item.name}</h6>
+                        </td>
+                        <td class="fw-bold">₹${item.price}</td>
+                        <td>
+                            <div class="input-group" style="width: 100px; height: 32px;">
+                                <button class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-start-3 cart-qty-minus" data-id="${item.id}"><i class="fa-solid fa-minus"></i></button>
+                                <input type="text" class="form-control form-control-sm text-center py-0 px-1 font-weight-bold" value="${item.quantity}" readonly>
+                                <button class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-end-3 cart-qty-plus" data-id="${item.id}"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        </td>
+                        <td class="fw-bold text-primary">₹${item.price * item.quantity}</td>
+                        <td>
+                            <button class="btn btn-link text-danger p-0 border-0 cart-remove-item" data-id="${item.id}"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                // Update totals
+                const total = CartManager.getTotal();
+                subtotalText.innerText = total;
+                grandTotalText.innerText = total;
+
+                // Sync split bill
+                updateSplitDetails();
+            }
+
+            // Setup Qty triggers
+            tableBody.addEventListener("click", (e) => {
+                const btnMinus = e.target.closest(".cart-qty-minus");
+                if (btnMinus) {
+                    const foodId = btnMinus.getAttribute("data-id");
+                    const cart = CartManager.get();
+                    const item = cart.find(i => i.id === parseInt(foodId));
+                    if (item) {
+                        CartManager.updateQty(foodId, item.quantity - 1);
+                        renderCartPage();
+                    }
+                    return;
+                }
+
+                const btnPlus = e.target.closest(".cart-qty-plus");
+                if (btnPlus) {
+                    const foodId = btnPlus.getAttribute("data-id");
+                    const cart = CartManager.get();
+                    const item = cart.find(i => i.id === parseInt(foodId));
+                    if (item) {
+                        CartManager.updateQty(foodId, item.quantity + 1);
+                        renderCartPage();
+                    }
+                    return;
+                }
+
+                const btnRemove = e.target.closest(".cart-remove-item");
+                if (btnRemove) {
+                    const foodId = btnRemove.getAttribute("data-id");
+                    CartManager.remove(foodId);
+                    renderCartPage();
+                    return;
+                }
+            });
+
+            // Split Bill Toggle
+            splitCheckbox.addEventListener("change", (e) => {
+                splitForm.style.display = e.target.checked ? "block" : "none";
+                updateSplitDetails();
+            });
+
+            splitCountInput.addEventListener("input", updateSplitDetails);
+
+            function updateSplitDetails() {
+                if (splitCheckbox.checked) {
+                    const total = CartManager.getTotal();
+                    const divisor = parseInt(splitCountInput.value) || 2;
+                    splitOwesText.innerText = (total / divisor).toFixed(0);
+                }
+            }
+
+            // Checkout trigger
+            const upiModalEl = document.getElementById("upiPaymentModal");
+            const upiModal = new bootstrap.Modal(upiModalEl);
+            const confirmPaymentBtn = document.getElementById("confirmPaymentBtn");
+            const paymentLoader = document.getElementById("paymentLoader");
+
+            document.getElementById("cartCheckoutBtn").addEventListener("click", () => {
+                const cart = CartManager.get();
+                if (cart.length === 0) return;
+
+                // Reset modal state
+                confirmPaymentBtn.style.display = "block";
+                paymentLoader.style.display = "none";
+                document.getElementById("modalPaymentAmount").innerText = CartManager.getTotal();
+
+                // Open modal
+                upiModal.show();
+            });
+
+            confirmPaymentBtn.addEventListener("click", () => {
+                const cart = CartManager.get();
+                if (cart.length === 0) return;
+
+                // Show simulated handshake loader
+                confirmPaymentBtn.style.display = "none";
+                paymentLoader.style.display = "block";
+
+                setTimeout(() => {
+                    const user = JSON.parse(localStorage.getItem("munch_user")) || {};
+                    
+                    // Construct order record with status "Paid (Awaiting Approval)"
+                    const newOrder = {
+                        id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+                        date: new Date().toISOString().slice(0,10),
+                        items: cart,
+                        total: CartManager.getTotal(),
+                        status: "Paid (Awaiting Approval)"
+                    };
+
+                    // 1. Add to student order history
+                    if (!user.orders) user.orders = [];
+                    user.orders.unshift(newOrder);
+                    localStorage.setItem("munch_user", JSON.stringify(user));
+
+                    // 2. Add to global admin orders queue with status "Paid (Awaiting Approval)"
+                    const adminOrders = JSON.parse(localStorage.getItem("munch_orders")) || [];
+                    const itemSummary = cart.map(i => `${i.name} (${i.quantity})`).join(", ");
+                    adminOrders.unshift({
+                        id: newOrder.id,
+                        user: user.name || "Rahul Verma",
+                        date: newOrder.date,
+                        items: itemSummary,
+                        total: newOrder.total,
+                        status: "Paid (Awaiting Approval)"
+                    });
+                    localStorage.setItem("munch_orders", JSON.stringify(adminOrders));
+
+                    // Save this specific order to show in confirmation page summary!
+                    localStorage.setItem("munch_latest_order", JSON.stringify(newOrder));
+                    
+                    // Clear cart state
+                    CartManager.clear();
+
+                    // Hide modal and route
+                    upiModal.hide();
+                    showToast("Payment verified! Order dispatched to canteen.", "success");
+                    
+                    setTimeout(() => {
+                        window.location.href = "order-confirm.html";
+                    }, 1000);
+                }, 2200);
+            });
+
+            // Initial Load
+            renderCartPage();
+        });
+    </script>
+</body>
+</html>

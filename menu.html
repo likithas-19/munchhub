@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munch Hub - Smart Menu</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        .filter-btn {
+            border-radius: 30px;
+            padding: 0.5rem 1.25rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            transition: var(--transition-smooth);
+        }
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="dashboard-sidebar d-flex flex-column justify-content-between">
+            <div>
+                <!-- Brand Title -->
+                <a href="index.html" class="d-flex align-items-center gap-2 fw-bold text-primary text-decoration-none mb-4" style="font-size: 1.5rem;">
+                    <i class="fa-solid fa-pizza-slice text-secondary"></i> MunchHub
+                </a>
+                
+                <!-- Profile Indicator -->
+                <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
+                    <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80" alt="Student Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="overflow-hidden">
+                        <h6 class="mb-0 fw-bold text-truncate profile-welcome-name">Rahul Verma</h6>
+                        <span class="text-muted small text-truncate d-block profile-welcome-college">NIT Campus</span>
+                    </div>
+                </div>
+
+                <!-- Menu Links -->
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item">
+                        <a href="dashboard.html" class="sidebar-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="mood-meals.html" class="sidebar-link"><i class="fa-solid fa-face-smile"></i> Mood Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="study-meals.html" class="sidebar-link"><i class="fa-solid fa-book"></i> Study Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="budget-meals.html" class="sidebar-link"><i class="fa-solid fa-wallet"></i> Budget Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="trending.html" class="sidebar-link"><i class="fa-solid fa-fire text-danger"></i> Trending Foods</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="group-order.html" class="sidebar-link"><i class="fa-solid fa-people-group"></i> Group Orders</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="profile.html" class="sidebar-link"><i class="fa-solid fa-user"></i> Profile</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="cart.html" class="sidebar-link active position-relative">
+                            <i class="fa-solid fa-cart-shopping"></i> My Cart
+                            <span class="position-absolute end-0 me-3 translate-middle-y badge rounded-pill bg-danger cart-count-badge font-weight-bold" style="font-size: 0.65rem; top: 50%;">0</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Logout Bottom -->
+            <div>
+                <hr class="border-secondary">
+                <a href="index.html" class="sidebar-link text-danger fw-semibold" onclick="localStorage.removeItem('munch_cart')"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Header -->
+            <div class="row align-items-center g-4 mb-5">
+                <div class="col-lg-7">
+                    <span class="badge munch-badge badge-glow-primary mb-2">Interactive Menu</span>
+                    <h2 class="fw-bold mb-1">Munch Hub Smart Menu 🍽️</h2>
+                    <p class="text-secondary mb-0">Browse through high-quality dishes, select categories, and add meals directly to your cart.</p>
+                </div>
+                <!-- Interactive Search Input -->
+                <div class="col-lg-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted shadow-sm rounded-start-4"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="menuTrieSearch" class="form-control border-start-0 shadow-sm munch-input rounded-end-4" style="height: 52px;" placeholder="Search menu (e.g. coffee, sandwich)...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Filters Horizontal row -->
+            <div class="d-flex flex-wrap gap-2 mb-5" id="categoryFilters">
+                <button class="filter-btn active" data-category="All">All Items</button>
+                <button class="filter-btn" data-category="Fast Food">Fast Food</button>
+                <button class="filter-btn" data-category="Coffee & Shakes">Coffee & Shakes</button>
+                <button class="filter-btn" data-category="South Indian">South Indian</button>
+                <button class="filter-btn" data-category="Chinese">Chinese</button>
+                <button class="filter-btn" data-category="Salads">Salads</button>
+                <button class="filter-btn" data-category="Desserts">Desserts</button>
+            </div>
+
+            <!-- AI Healthy Swap Recommendation Section (Static Banner suggestion) -->
+            <div class="card glass-card p-4 border-0 mb-5 text-white shadow-sm" style="background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="fs-2 text-white"><i class="fa-solid fa-seedling"></i></div>
+                    <div>
+                        <h5 class="fw-bold mb-1 text-white">Smart Choice Alert: AI Healthy Swap</h5>
+                        <p class="small text-white-50 mb-0">Craving *Fries*? Swap them for a highly nutritious **Quinoa Salad Bowl** to improve mental focus, study retention, and overall energy during long assignments!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu Cards Grid -->
+            <div class="row g-4" id="menu-grid">
+                <!-- Cards loaded dynamically -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap & JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/daa-algorithms.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const foods = JSON.parse(localStorage.getItem("munch_foods")) || [];
+            
+            let activeCategory = "All";
+            let activeQuery = "";
+
+            // Trie Autocomplete setup
+            const searchTrie = new Trie();
+            foods.forEach(f => searchTrie.insert(f));
+
+            function renderFilteredMenu() {
+                const grid = document.getElementById("menu-grid");
+                if (!grid) return;
+                grid.innerHTML = "";
+
+                // Get initial subset
+                let listToRender = foods;
+
+                // 1. Apply prefix search if search text is active
+                if (activeQuery.length >= 2) {
+                    listToRender = searchTrie.search(activeQuery);
+                }
+
+                // 2. Apply Category Filters
+                if (activeCategory !== "All") {
+                    listToRender = listToRender.filter(f => f.category === activeCategory);
+                }
+
+                // 3. Apply Veg/Non-Veg Filter
+                const activeVegFilter = localStorage.getItem("munch_veg_filter") || "all";
+                if (activeVegFilter === "veg") {
+                    listToRender = listToRender.filter(f => f.veg === true || f.veg === "true");
+                } else if (activeVegFilter === "nonveg") {
+                    listToRender = listToRender.filter(f => f.veg === false || f.veg === "false");
+                }
+
+                if (listToRender.length > 0) {
+                    listToRender.forEach(food => {
+                        const colDiv = document.createElement("div");
+                        colDiv.className = "col-md-6 col-lg-4";
+                        colDiv.innerHTML = createFoodCardHTML(food);
+                        grid.appendChild(colDiv);
+                    });
+                } else {
+                    grid.innerHTML = `
+                        <div class="col-12 py-5 text-center text-muted">
+                            <i class="fa-solid fa-folder-open fs-1 mb-2"></i>
+                            <p>No items found matching the selected filters.</p>
+                        </div>
+                    `;
+                }
+            }
+
+            // Expose globally for top-bar filter triggers
+            window.renderFilteredMenu = renderFilteredMenu;
+
+            // Initial render
+            renderFilteredMenu();
+
+            // Category Button triggers
+            document.querySelectorAll(".filter-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+                    btn.classList.add("active");
+                    activeCategory = btn.getAttribute("data-category");
+                    renderFilteredMenu();
+                });
+            });
+
+            // Search input trigger
+            document.getElementById("menuTrieSearch").addEventListener("input", (e) => {
+                activeQuery = e.target.value.trim();
+                renderFilteredMenu();
+            });
+
+        });
+    </script>
+</body>
+</html>

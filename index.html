@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munch Hub - Smart Student Food Ordering</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            padding: 8rem 0 6rem 0;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(236, 72, 153, 0.08) 100%);
+            border-bottom-left-radius: 60px;
+            border-bottom-right-radius: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-blob {
+            position: absolute;
+            background: var(--gradient-primary);
+            filter: blur(120px);
+            opacity: 0.15;
+            z-index: -1;
+            border-radius: 50%;
+        }
+        .blob-1 { width: 350px; height: 350px; top: -50px; right: -50px; }
+        .blob-2 { width: 400px; height: 400px; bottom: -100px; left: -100px; }
+        
+        .feature-icon-wrapper {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            background: var(--primary-glow);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            transition: var(--transition-smooth);
+        }
+        .feature-card:hover .feature-icon-wrapper {
+            background: var(--gradient-primary);
+            color: #fff;
+            transform: scale(1.1) rotate(5deg);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sticky Navbar -->
+    <nav class="navbar navbar-expand-lg glass-navbar fixed-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-primary" href="index.html" style="font-size: 1.5rem;">
+                <i class="fa-solid fa-pizza-slice text-secondary"></i> MunchHub
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#munchNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="munchNavbar">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-2">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="menu.html"><i class="fa-solid fa-magnifying-glass"></i> Search Food</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="trending.html"><i class="fa-solid fa-fire text-danger"></i> Trending</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="cart.html" class="position-relative text-dark fs-5 me-2">
+                        <i class="fa-solid fa-cart-shopping text-secondary"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-count-badge font-weight-bold" style="font-size: 0.65rem;">0</span>
+                    </a>
+                    <a href="login.html" class="munch-btn munch-btn-outline text-decoration-none py-2 px-4">Login</a>
+                    <a href="register.html" class="munch-btn munch-btn-primary text-white text-decoration-none py-2 px-4">Sign Up</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero-section">
+        <div class="hero-blob blob-1"></div>
+        <div class="hero-blob blob-2"></div>
+        <div class="container mt-5">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <span class="badge munch-badge badge-glow-secondary mb-3"><i class="fa-solid fa-sparkles"></i> The Smart Campus Canteen</span>
+                    <h1 class="display-4 fw-extrabold mb-4" style="line-height: 1.1;">Satisfy Your Cravings, <span class="text-transparent bg-clip-text" style="background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Optimize Your Budget!</span></h1>
+                    <p class="lead mb-4 text-secondary">Munch Hub is a next-gen student food intelligence portal. Discover mood-boosting meals, secure late-night coffee boosts, and optimize your weekly menu with our smart planning features.</p>
+                    <div class="d-flex gap-3">
+                        <a href="menu.html" class="munch-btn munch-btn-primary text-decoration-none py-3 px-4 fs-5"><i class="fa-solid fa-utensils"></i> Order Now</a>
+                        <a href="budget-meals.html" class="munch-btn munch-btn-secondary text-decoration-none py-3 px-4 fs-5"><i class="fa-solid fa-calculator"></i> Budget Planner</a>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=700&q=80" alt="Delicious Food Plate" class="img-fluid rounded-4 shadow-lg hover-scale" style="max-height: 420px; width: 100%; object-fit: cover;">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Smart Categories Section -->
+    <section class="container py-5 my-3">
+        <div class="text-center mb-5">
+            <h2 class="h1 mb-2">Smart Food Discovery</h2>
+            <p class="text-secondary max-width-600 mx-auto">Explore recommendations calculated specifically for the student lifestyle.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="card glass-card p-4 h-100 text-center feature-card cursor-pointer" onclick="window.location.href='mood-meals.html'">
+                    <div class="feature-icon-wrapper mx-auto">
+                        <i class="fa-solid fa-face-smile"></i>
+                    </div>
+                    <h4>Mood Meals</h4>
+                    <p class="small text-secondary mb-0">Stressed? Tired? Excited? Choose your mood and view tailored brain food recommendations.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card glass-card p-4 h-100 text-center feature-card cursor-pointer" onclick="window.location.href='study-meals.html'">
+                    <div class="feature-icon-wrapper mx-auto" style="color: var(--secondary); background: var(--secondary-glow);">
+                        <i class="fa-solid fa-book"></i>
+                    </div>
+                    <h4>Study Boosters</h4>
+                    <p class="small text-secondary mb-0">High-energy snacks, strong coffees, and healthy brain meals for coding runs and exam night prep.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card glass-card p-4 h-100 text-center feature-card cursor-pointer" onclick="window.location.href='budget-meals.html'">
+                    <div class="feature-icon-wrapper mx-auto" style="color: var(--accent-teal); background: rgba(20, 184, 166, 0.15);">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                    <h4>Budget Optimizer</h4>
+                    <p class="small text-secondary mb-0">Enter your exact budget and let our smart optimizer build the absolute best combinations of dishes.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card glass-card p-4 h-100 text-center feature-card cursor-pointer" onclick="window.location.href='trending.html'">
+                    <div class="feature-icon-wrapper mx-auto" style="color: var(--accent-orange); background: rgba(245, 158, 11, 0.15);">
+                        <i class="fa-solid fa-fire"></i>
+                    </div>
+                    <h4>Trending Foods</h4>
+                    <p class="small text-secondary mb-0">Live stats of most popular and highly ordered meals sorted automatically for quick comparison.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recommended Foods -->
+    <section class="container py-5 bg-light rounded-5 p-5 shadow-sm">
+        <div class="d-flex justify-content-between align-items-end mb-5">
+            <div>
+                <span class="badge munch-badge badge-glow-primary mb-2">Editor's Picks</span>
+                <h2 class="h1 mb-0">Students' Top Picks</h2>
+            </div>
+            <a href="menu.html" class="munch-btn munch-btn-outline text-decoration-none py-2 px-4">View All Menu <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        
+        <div class="row g-4" id="recommended-foods-grid">
+            <!-- Dynamic Food Cards Injected Here -->
+        </div>
+    </section>
+
+    <!-- Quick Pickup Section -->
+    <section class="container py-5 my-5">
+        <div class="card glass-card p-5 border-0 overflow-hidden position-relative shadow" style="background: var(--gradient-dark);">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-7 text-white position-relative z-index-2">
+                    <span class="badge munch-badge badge-glow-primary mb-3"><i class="fa-solid fa-bolt text-warning"></i> Skip the Canteen Line</span>
+                    <h2 class="display-5 fw-bold mb-3 text-white">Smart Group Ordering & Central Pickup</h2>
+                    <p class="lead mb-4 text-white-50">Create a collaborative group order with your study group or hostel floor. Our system automatically calculates a central, shortest common pickup point on campus to split delivery walking distance equally!</p>
+                    <a href="group-order.html" class="munch-btn munch-btn-secondary text-white text-decoration-none py-3 px-4 fs-5"><i class="fa-solid fa-people-group"></i> Start Group Room</a>
+                </div>
+                <div class="col-lg-5 text-center position-relative">
+                    <img src="https://images.unsplash.com/photo-1543007630-9710e4a00a20?auto=format&fit=crop&w=500&q=80" alt="Quick Pickup Concept" class="img-fluid rounded-4 shadow hover-scale" style="max-height: 320px; object-fit: cover;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white pt-5 pb-4 border-top border-secondary">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <h5 class="fw-bold text-primary mb-4"><i class="fa-solid fa-pizza-slice text-secondary"></i> MunchHub</h5>
+                    <p class="text-white-50">A smart campus food recommendation and planning engine. Designed for college students to eat smart, study energized, and save cash.</p>
+                </div>
+                <div class="col-md-2 offset-md-1">
+                    <h5 class="text-white mb-4">Core Links</h5>
+                    <ul class="list-unstyled text-white-50 d-flex flex-column gap-2">
+                        <li><a href="menu.html" class="text-white-50 text-decoration-none hover-link">Smart Menu</a></li>
+                        <li><a href="mood-meals.html" class="text-white-50 text-decoration-none">Mood Feeds</a></li>
+                        <li><a href="budget-meals.html" class="text-white-50 text-decoration-none">Budget Optimizer</a></li>
+                        <li><a href="group-order.html" class="text-white-50 text-decoration-none">Group Orders</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2">
+                    <h5 class="text-white mb-4">Admin Panel</h5>
+                    <ul class="list-unstyled text-white-50 d-flex flex-column gap-2">
+                        <li><a href="admin-login.html" class="text-white-50 text-decoration-none"><i class="fa-solid fa-user-shield text-primary"></i> Portal Login</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5 class="text-white mb-4">Campus Contact</h5>
+                    <p class="text-white-50 mb-1"><i class="fa-solid fa-envelope text-primary"></i> support.munchhub@college.edu</p>
+                    <p class="text-white-50 mb-3"><i class="fa-solid fa-phone text-secondary"></i> EXT: 8892 (Campus Hotline)</p>
+                    <div class="d-flex gap-3 fs-5 text-white-50">
+                        <a href="#" class="text-white-50"><i class="fa-brands fa-square-instagram"></i></a>
+                        <a href="#" class="text-white-50"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#" class="text-white-50"><i class="fa-brands fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4 border-secondary">
+            <div class="text-center text-white-50 small">
+                <p class="mb-0">&copy; 2026 Munch Hub. Designed for smart student dining.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap & JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/daa-algorithms.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Render 3 popular recommended food cards dynamically from data.js
+            const foods = JSON.parse(localStorage.getItem("munch_foods")) || [];
+            const container = document.getElementById("recommended-foods-grid");
+            
+            if (foods.length > 0 && container) {
+                // Get the top 3 highest rated foods
+                const topFoods = foods.slice(0, 3);
+                container.innerHTML = "";
+                topFoods.forEach(food => {
+                    const cardDiv = document.createElement("div");
+                    cardDiv.className = "col-md-6 col-lg-4";
+                    cardDiv.innerHTML = createFoodCardHTML(food);
+                    container.appendChild(cardDiv);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munch Hub - Student Dashboard</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        .search-results-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.25rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .search-result-item:hover {
+            background: var(--primary-glow);
+        }
+        .search-result-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="dashboard-sidebar d-flex flex-column justify-content-between">
+            <div>
+                <!-- Brand Title -->
+                <a href="index.html" class="d-flex align-items-center gap-2 fw-bold text-primary text-decoration-none mb-4" style="font-size: 1.5rem;">
+                    <i class="fa-solid fa-pizza-slice text-secondary"></i> MunchHub
+                </a>
+                
+                <!-- Profile Indicator -->
+                <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
+                    <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80" alt="Student Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="overflow-hidden">
+                        <h6 class="mb-0 fw-bold text-truncate profile-welcome-name">Rahul Verma</h6>
+                        <span class="text-muted small text-truncate d-block profile-welcome-college">NIT Campus</span>
+                    </div>
+                </div>
+
+                <!-- Menu Links -->
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item">
+                        <a href="dashboard.html" class="sidebar-link active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="mood-meals.html" class="sidebar-link"><i class="fa-solid fa-face-smile"></i> Mood Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="study-meals.html" class="sidebar-link"><i class="fa-solid fa-book"></i> Study Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="budget-meals.html" class="sidebar-link"><i class="fa-solid fa-wallet"></i> Budget Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="trending.html" class="sidebar-link"><i class="fa-solid fa-fire text-danger"></i> Trending Foods</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="group-order.html" class="sidebar-link"><i class="fa-solid fa-people-group"></i> Group Orders</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="profile.html" class="sidebar-link"><i class="fa-solid fa-user"></i> Profile</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="cart.html" class="sidebar-link position-relative">
+                            <i class="fa-solid fa-cart-shopping"></i> My Cart
+                            <span class="position-absolute end-0 me-3 translate-middle-y badge rounded-pill bg-danger cart-count-badge font-weight-bold" style="font-size: 0.65rem; top: 50%;">0</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Logout Bottom -->
+            <div>
+                <hr class="border-secondary">
+                <a href="index.html" class="sidebar-link text-danger fw-semibold" onclick="localStorage.removeItem('munch_cart')"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Content -->
+        <main class="dashboard-main">
+            <!-- Welcome Header & Search Row -->
+            <div class="row align-items-center g-4 mb-5">
+                <div class="col-lg-7">
+                    <span class="badge munch-badge badge-glow-primary mb-2"><i class="fa-solid fa-calendar"></i> Campus Active Feed</span>
+                    <h2 class="fw-bold mb-1">Hey, <span class="profile-welcome-name text-primary">Rahul</span>! 👋</h2>
+                    <p class="text-secondary mb-0">What are we studying or craving today? Fuel your brain with smart suggestions.</p>
+                </div>
+                
+                <!-- Interactive Trie Autocomplete Search -->
+                <div class="col-lg-5 position-relative">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted shadow-sm rounded-start-4"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="trieSearchBar" class="form-control border-start-0 shadow-sm munch-input rounded-end-4" style="height: 52px;" placeholder="Search meals (e.g. burger, coffee, fries)...">
+                    </div>
+                    <!-- Trie dropdown list -->
+                    <div class="search-results-dropdown" id="searchResults">
+                        <!-- Items injected dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Welcome Banner Card -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="card glass-card border-0 overflow-hidden position-relative shadow-sm" style="background: var(--gradient-primary);">
+                        <div class="p-5 text-white position-relative z-index-2">
+                            <span class="badge munch-badge badge-glow-secondary mb-3"><i class="fa-solid fa-bolt"></i> Quick Hack</span>
+                            <h3 class="fw-bold text-white mb-2">Budget tight? Use the Smart Budget Combiner</h3>
+                            <p class="text-white-50 max-width-600 mb-4">Provide our planner with your exact pocket balance. We'll search campus menus and find the single optimal combination of items to maximize your rating and calorie needs.</p>
+                            <a href="budget-meals.html" class="munch-btn munch-btn-secondary text-white text-decoration-none py-2 px-4"><i class="fa-solid fa-calculator"></i> Run Optimizer</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Grid -->
+            <div class="row g-4 mb-5">
+                <div class="col-12">
+                    <h4 class="fw-bold mb-4"><i class="fa-solid fa-grid-2 text-primary"></i> Explore Categories</h4>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card glass-card text-center p-3 cursor-pointer hover-scale" onclick="window.location.href='mood-meals.html'">
+                        <div class="fs-1 mb-2">😊</div>
+                        <h6 class="mb-0 fw-bold">Mood Meals</h6>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card glass-card text-center p-3 cursor-pointer hover-scale" onclick="window.location.href='study-meals.html'">
+                        <div class="fs-1 mb-2">📚</div>
+                        <h6 class="mb-0 fw-bold">Study Fuel</h6>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card glass-card text-center p-3 cursor-pointer hover-scale" onclick="window.location.href='budget-meals.html'">
+                        <div class="fs-1 mb-2">💰</div>
+                        <h6 class="mb-0 fw-bold">Budget Plan</h6>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card glass-card text-center p-3 cursor-pointer hover-scale" onclick="window.location.href='trending.html'">
+                        <div class="fs-1 mb-2">🔥</div>
+                        <h6 class="mb-0 fw-bold">Trending</h6>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popular Restaurants Section -->
+            <section class="mb-5">
+                <h4 class="fw-bold mb-4"><i class="fa-solid fa-store text-primary"></i> Popular Campus Restaurants</h4>
+                <div class="row g-4" id="popular-restaurants-row">
+                    <!-- Dynamic Restaurant Cards Injected Here -->
+                </div>
+            </section>
+
+            <!-- Recommended Foods Section -->
+            <section class="mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="fw-bold mb-0"><i class="fa-solid fa-thumbs-up text-primary"></i> Recommended For You</h4>
+                    <a href="menu.html" class="small text-primary text-decoration-none fw-bold">See Smart Menu <i class="fa-solid fa-circle-arrow-right"></i></a>
+                </div>
+                <div class="row g-4" id="recommended-foods-row">
+                    <!-- Dynamic Food Cards Injected Here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Bootstrap & JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/daa-algorithms.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const foods = JSON.parse(localStorage.getItem("munch_foods")) || [];
+            const restaurants = JSON.parse(localStorage.getItem("munch_restaurants")) || [];
+
+            // 1. Render Restaurants dynamically
+            const restContainer = document.getElementById("popular-restaurants-row");
+            if (restContainer && restaurants.length > 0) {
+                restContainer.innerHTML = "";
+                restaurants.slice(0, 3).forEach(rest => {
+                    const colDiv = document.createElement("div");
+                    colDiv.className = "col-md-6 col-lg-4";
+                    colDiv.innerHTML = createRestaurantCardHTML(rest);
+                    restContainer.appendChild(colDiv);
+                });
+            }
+
+            // 2. Render Recommended Foods dynamically
+            const foodContainer = document.getElementById("recommended-foods-row");
+            if (foodContainer && foods.length > 0) {
+                foodContainer.innerHTML = "";
+                foods.filter(f => f.trending).slice(0, 3).forEach(food => {
+                    const colDiv = document.createElement("div");
+                    colDiv.className = "col-md-6 col-lg-4";
+                    colDiv.innerHTML = createFoodCardHTML(food);
+                    foodContainer.appendChild(colDiv);
+                });
+            }
+
+            // 3. Trie Prefix Autocomplete Search Logic
+            const searchInput = document.getElementById("trieSearchBar");
+            const searchResults = document.getElementById("searchResults");
+            
+            // Build and insert food items into our Trie
+            const searchTrie = new Trie();
+            foods.forEach(food => searchTrie.insert(food));
+
+            searchInput.addEventListener("input", (e) => {
+                const query = e.target.value.trim();
+                if (query.length < 2) {
+                    searchResults.style.display = "none";
+                    return;
+                }
+
+                // Query the Trie (Fast $O(L)$ autocomplete matches)
+                const matches = searchTrie.search(query);
+                
+                if (matches.length > 0) {
+                    searchResults.innerHTML = `
+                        <div class="px-3 py-2 small text-muted border-bottom d-flex justify-content-between align-items-center">
+                            <span>Autocomplete Matches</span>
+                            <span class="badge bg-primary rounded-pill">Fast Matches</span>
+                        </div>
+                    `;
+                    matches.forEach(food => {
+                        const itemDiv = document.createElement("div");
+                        itemDiv.className = "search-result-item";
+                        itemDiv.innerHTML = `
+                            <img src="${food.image}" class="search-result-img" alt="${food.name}">
+                            <div class="overflow-hidden">
+                                <h6 class="mb-0 fw-bold text-truncate">${food.name}</h6>
+                                <span class="text-primary small">₹${food.price}</span> <span class="text-muted small">• ${food.category}</span>
+                            </div>
+                        `;
+                        itemDiv.addEventListener("click", () => {
+                            window.location.href = `food-details.html?id=${food.id}`;
+                        });
+                        searchResults.appendChild(itemDiv);
+                    });
+                    searchResults.style.display = "block";
+                } else {
+                    searchResults.innerHTML = `<div class="p-3 text-center small text-muted"><i class="fa-solid fa-face-frown mb-2 d-block fs-4"></i> No meals found matching prefix.</div>`;
+                    searchResults.style.display = "block";
+                }
+            });
+
+            // Close search results dropdown when clicking outside
+            document.addEventListener("click", (e) => {
+                if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.style.display = "none";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

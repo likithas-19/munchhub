@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munch Hub - Restaurant Menu</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        .rest-banner-wrapper {
+            position: relative;
+            height: 250px;
+            border-radius: 24px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        .rest-banner-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.65);
+        }
+        .rest-banner-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 2.5rem;
+            color: #fff;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="dashboard-sidebar d-flex flex-column justify-content-between">
+            <div>
+                <!-- Brand Title -->
+                <a href="index.html" class="d-flex align-items-center gap-2 fw-bold text-primary text-decoration-none mb-4" style="font-size: 1.5rem;">
+                    <i class="fa-solid fa-pizza-slice text-secondary"></i> MunchHub
+                </a>
+                
+                <!-- Profile Indicator -->
+                <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
+                    <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80" alt="Student Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="overflow-hidden">
+                        <h6 class="mb-0 fw-bold text-truncate profile-welcome-name">Rahul Verma</h6>
+                        <span class="text-muted small text-truncate d-block profile-welcome-college">NIT Campus</span>
+                    </div>
+                </div>
+
+                <!-- Menu Links -->
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item">
+                        <a href="dashboard.html" class="sidebar-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="mood-meals.html" class="sidebar-link"><i class="fa-solid fa-face-smile"></i> Mood Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="study-meals.html" class="sidebar-link"><i class="fa-solid fa-book"></i> Study Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="budget-meals.html" class="sidebar-link"><i class="fa-solid fa-wallet"></i> Budget Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="trending.html" class="sidebar-link"><i class="fa-solid fa-fire text-danger"></i> Trending Foods</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="group-order.html" class="sidebar-link"><i class="fa-solid fa-people-group"></i> Group Orders</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="profile.html" class="sidebar-link"><i class="fa-solid fa-user"></i> Profile</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="cart.html" class="sidebar-link active position-relative">
+                            <i class="fa-solid fa-cart-shopping"></i> My Cart
+                            <span class="position-absolute end-0 me-3 translate-middle-y badge rounded-pill bg-danger cart-count-badge font-weight-bold" style="font-size: 0.65rem; top: 50%;">0</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Logout Bottom -->
+            <div>
+                <hr class="border-secondary">
+                <a href="index.html" class="sidebar-link text-danger fw-semibold" onclick="localStorage.removeItem('munch_cart')"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Back Action -->
+            <div class="mb-4">
+                <button class="munch-btn munch-btn-outline py-2 px-3 small border-light-subtle text-secondary" onclick="window.history.back()">
+                    <i class="fa-solid fa-circle-left me-2"></i> Back
+                </button>
+            </div>
+
+            <!-- Restaurant Details Header Banner -->
+            <div class="rest-banner-wrapper shadow" id="restBannerContainer">
+                <!-- Injected dynamically -->
+            </div>
+
+            <!-- search and category menu filtering -->
+            <div class="row align-items-center g-4 mb-4">
+                <div class="col-md-8">
+                    <h4 class="fw-bold mb-0"><i class="fa-solid fa-utensils text-primary"></i> Available Food Menu</h4>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" id="restMenuSearch" class="form-control munch-input" placeholder="Search food inside this cafe...">
+                </div>
+            </div>
+
+            <!-- Menu Grid -->
+            <div class="row g-4" id="restMenuGrid">
+                <!-- Food items injected dynamically -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap & JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/daa-algorithms.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const restId = parseInt(getUrlParam("id"));
+            if (!restId) {
+                document.getElementById("restMenuGrid").innerHTML = `<div class="col-12 py-5 text-center text-muted"><h4>Error: Restaurant ID is missing.</h4></div>`;
+                return;
+            }
+
+            const restaurants = JSON.parse(localStorage.getItem("munch_restaurants")) || [];
+            const foods = JSON.parse(localStorage.getItem("munch_foods")) || [];
+
+            const rest = restaurants.find(r => r.id === restId);
+            if (!rest) {
+                document.getElementById("restMenuGrid").innerHTML = `<div class="col-12 py-5 text-center text-muted"><h4>Error: Restaurant not found in database.</h4></div>`;
+                return;
+            }
+
+            // Render Banner Info
+            const bannerContainer = document.getElementById("restBannerContainer");
+            bannerContainer.innerHTML = `
+                <img src="${rest.banner || rest.image}" class="rest-banner-img" alt="${rest.name}">
+                <div class="rest-banner-overlay">
+                    <span class="badge munch-badge badge-glow-primary mb-2"><i class="fa-solid fa-motorcycle"></i> ${rest.averageTime} delivery</span>
+                    <h1 class="fw-bold text-white mb-2">${rest.name}</h1>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-warning fw-bold"><i class="fa-solid fa-star"></i> ${rest.rating} rating</span>
+                        <span class="text-white-50">|</span>
+                        <span class="text-white-50"><i class="fa-solid fa-location-dot"></i> NIT Campus Main Yard</span>
+                    </div>
+                    <p class="text-white-50 small mb-0 mt-2 max-width-600">${rest.description}</p>
+                </div>
+            `;
+
+            // Filter foods matching restaurant
+            const restFoods = foods.filter(f => f.restaurantId === restId);
+
+            function renderRestaurantMenu(filterQuery = "") {
+                const grid = document.getElementById("restMenuGrid");
+                grid.innerHTML = "";
+
+                let filtered = restFoods;
+                if (filterQuery.trim()) {
+                    const cleanQ = filterQuery.toLowerCase().trim();
+                    filtered = restFoods.filter(f => f.name.toLowerCase().includes(cleanQ));
+                }
+
+                if (filtered.length > 0) {
+                    filtered.forEach(food => {
+                        const colDiv = document.createElement("div");
+                        colDiv.className = "col-md-6 col-lg-4";
+                        colDiv.innerHTML = createFoodCardHTML(food, rest.name);
+                        grid.appendChild(colDiv);
+                    });
+                } else {
+                    grid.innerHTML = `
+                        <div class="col-12 py-5 text-center text-muted">
+                            <i class="fa-solid fa-circle-exclamation fs-2 mb-2"></i>
+                            <p>No dishes found matching search term inside this restaurant.</p>
+                        </div>
+                    `;
+                }
+            }
+
+            // Initial render
+            renderRestaurantMenu();
+
+            // Setup search hook inside restaurant menu
+            document.getElementById("restMenuSearch").addEventListener("input", (e) => {
+                renderRestaurantMenu(e.target.value);
+            });
+
+        });
+    </script>
+</body>
+</html>

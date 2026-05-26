@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munch Hub - Order Placed Successfully!</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 0;
+        }
+        [data-theme="dark"] body {
+            background: linear-gradient(135deg, #090d16 0%, #111827 100%) !important;
+        }
+        .confirm-wrapper {
+            max-width: 600px;
+            width: 90%;
+        }
+        /* High-specificity overrides to ensure invoice text is completely visible (dark) on white background in dark theme */
+        [data-theme="dark"] #invoice-print-area,
+        [data-theme="dark"] #invoice-print-area *:not(.badge) {
+            color: #1e293b !important;
+        }
+        [data-theme="dark"] #invoice-print-area .text-primary,
+        [data-theme="dark"] #invoice-print-area h3.text-primary,
+        [data-theme="dark"] #invoice-print-area h4.text-primary {
+            color: #4f46e5 !important;
+        }
+        [data-theme="dark"] #invoice-print-area .text-muted,
+        [data-theme="dark"] #invoice-print-area span.text-muted {
+            color: #64748b !important;
+        }
+        [data-theme="dark"] #invoice-print-area .text-success,
+        [data-theme="dark"] #invoice-print-area strong.text-success {
+            color: #10b981 !important;
+        }
+        [data-theme="dark"] #invoice-print-area .print-table th {
+            background-color: #f1f5f9 !important;
+            color: #1e293b !important;
+        }
+        [data-theme="dark"] #invoice-print-area td,
+        [data-theme="dark"] #invoice-print-area th,
+        [data-theme="dark"] #invoice-print-area tr {
+            border-color: #e2e8f0 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="confirm-wrapper">
+        <div class="card glass-card p-5 text-center shadow-lg border-0">
+            <!-- Animated Checkmark -->
+            <div class="checkmark-container mb-4" id="statusCheckmarkContainer">
+                <div class="checkmark">
+                    <svg class="checkmark-circle" viewBox="0 0 52 52">
+                        <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                    </svg>
+                    <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </div>
+            </div>
+
+            <!-- Header Success Title -->
+            <h2 class="fw-bold mb-2" id="statusHeaderTitle">Order Confirmed! 🎉</h2>
+            <p class="text-secondary small mb-4" id="statusSubtitleText">Your order has been pushed into the canteen preparation Queue.</p>
+
+            <!-- Order summary display card -->
+            <div class="p-4 bg-light rounded-4 border text-start mb-4" id="orderSummaryCard">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="small text-muted font-weight-bold text-uppercase">ORDER REFERENCE</span>
+                    <span class="font-monospace fw-bold text-dark h6 mb-0" id="confirmOrderRef">ORD-0000</span>
+                </div>
+
+                <div class="border-top border-light-subtle my-3"></div>
+
+                <!-- List of ordered items -->
+                <div id="confirmItemsList" class="small text-secondary mb-3 d-flex flex-column gap-2">
+                    <!-- Items populated dynamically -->
+                </div>
+
+                <div class="border-top border-light-subtle my-3"></div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold text-dark">Total Paid (Simulated)</span>
+                    <span class="h5 text-primary font-weight-bold mb-0">₹<span id="confirmTotalPaid">0</span></span>
+                </div>
+            </div>
+
+            <!-- Estimated Countdown timer -->
+            <div class="card bg-dark text-white border-0 p-4 rounded-4 shadow-sm mb-4" id="countdownCard">
+                <div class="row align-items-center">
+                    <div class="col-4 text-center fs-2 text-warning">
+                        <i class="fa-solid fa-hourglass-half fa-spin"></i>
+                    </div>
+                    <div class="col-8 text-start">
+                        <span class="text-white-50 small d-block">ESTIMATED PREPARATION TIME</span>
+                        <h3 class="fw-bold text-white mb-0" id="pickupCountdown">12 mins 45 secs</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Awaiting Approval Card -->
+            <div class="card bg-dark text-white border-0 p-4 rounded-4 shadow-sm mb-4" id="awaitingApprovalCard" style="display: none;">
+                <div class="row align-items-center">
+                    <div class="col-4 text-center fs-2 text-warning">
+                        <i class="fa-solid fa-spinner fa-spin-pulse"></i>
+                    </div>
+                    <div class="col-8 text-start">
+                        <span class="text-warning fw-bold small d-block">UPI TRANSACTION VERIFYING</span>
+                        <p class="text-white-50 small mb-0">Preparation will begin immediately after canteen staff approves the payment.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Back to dashboard -->
+            <div class="d-flex flex-column gap-2">
+                <button id="viewInvoiceBtn" class="munch-btn munch-btn-secondary text-white py-3 px-4 fs-5 mb-2">
+                    <i class="fa-solid fa-file-invoice-dollar me-2"></i> View & Print Invoice
+                </button>
+                <a href="dashboard.html" class="munch-btn munch-btn-primary text-white text-decoration-none py-3 px-4 fs-5">
+                    <i class="fa-solid fa-house me-2"></i> Go to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Modal -->
+    <div class="modal fade" id="invoiceModal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content glass-card border border-light-subtle bg-slate-900 text-white p-4" style="background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(15px); border-radius: 24px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-primary" id="invoiceModalLabel"><i class="fa-solid fa-file-invoice-dollar me-2"></i> Official Canteen Receipt</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <!-- Printable Receipt Container -->
+                    <div id="invoice-print-area" class="p-4 rounded bg-white text-dark shadow-sm" style="color: #000 !important; background: #fff !important;">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <h3 class="fw-bold text-primary mb-0"><i class="fa-solid fa-pizza-slice me-2"></i> MunchHub</h3>
+                                <span class="text-muted small">Official Campus Food Network</span>
+                            </div>
+                            <div class="text-end">
+                                <h5 class="fw-bold mb-0 text-dark">TAX INVOICE</h5>
+                                <span class="text-muted small font-monospace" id="invoiceRefNo">ORD-0000</span>
+                            </div>
+                        </div>
+                        <hr style="border-color: #ddd;">
+                        
+                        <div class="row mb-4">
+                            <div class="col-sm-6">
+                                <span class="text-muted small d-block">BILLED TO STUDENT</span>
+                                <strong id="invoiceStudentName" class="text-dark">Rahul Verma</strong><br>
+                                <span class="small text-muted" id="invoiceStudentCollege">NIT Campus</span><br>
+                                <span class="small text-muted" id="invoiceStudentAddress">Room 304, Hostel Block B</span>
+                            </div>
+                            <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
+                                <span class="text-muted small d-block">TRANSACTION DETAILS</span>
+                                <strong>Date:</strong> <span id="invoiceDate" class="text-dark">2026-05-25</span><br>
+                                <strong>Payment Status:</strong> <span class="badge bg-success" id="invoicePaymentStatus">PAID (APPROVED)</span><br>
+                                <strong>Gateway:</strong> Munch UPI Pay
+                            </div>
+                        </div>
+
+                        <table class="table print-table table-bordered text-dark align-middle">
+                            <thead style="background-color: #f8fafc;">
+                                <tr class="text-dark">
+                                    <th>Item Summary</th>
+                                    <th class="text-end" style="width: 100px;">Price</th>
+                                    <th class="text-center" style="width: 80px;">Qty</th>
+                                    <th class="text-end" style="width: 120px;">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoiceItemsTableBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+
+                        <div class="row justify-content-end">
+                            <div class="col-sm-6 text-end">
+                                <div class="d-flex justify-content-between mb-2 small">
+                                    <span class="text-muted">Subtotal:</span>
+                                    <strong id="invoiceSubtotal" class="text-dark">₹0</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2 small">
+                                    <span class="text-muted">Canteen Surcharge:</span>
+                                    <strong class="text-success">FREE</strong>
+                                </div>
+                                <hr style="border-color: #ddd;">
+                                <div class="d-flex justify-content-between align-items-center mb-0">
+                                    <span class="fw-bold text-dark">Total Paid:</span>
+                                    <h4 class="fw-bold text-primary mb-0" id="invoiceGrandTotal">₹0</h4>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 text-center text-muted small border-top pt-3">
+                            <i class="fa-solid fa-circle-check text-success"></i> This is a computer generated receipt. Thank you for using MunchHub!
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-secondary px-4 py-2" style="border-radius:12px;" data-bs-dismiss="modal">Close</button>
+                    <button type="button" id="triggerPrintBtn" class="munch-btn munch-btn-primary px-4 py-2">
+                        Print / Save PDF <i class="fa-solid fa-print ms-1"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap & JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/daa-algorithms.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const latestOrder = JSON.parse(localStorage.getItem("munch_latest_order"));
+            if (!latestOrder) {
+                window.location.href = "dashboard.html";
+                return;
+            }
+
+            // Populate summary card
+            document.getElementById("confirmOrderRef").innerText = latestOrder.id;
+            document.getElementById("confirmTotalPaid").innerText = latestOrder.total;
+
+            const itemsContainer = document.getElementById("confirmItemsList");
+            itemsContainer.innerHTML = "";
+            latestOrder.items.forEach(item => {
+                const row = document.createElement("div");
+                row.className = "d-flex justify-content-between align-items-center";
+                row.innerHTML = `
+                    <span>${item.name} <strong class="text-dark">x${item.quantity}</strong></span>
+                    <span class="fw-bold text-dark">₹${item.price * item.quantity}</span>
+                `;
+                itemsContainer.appendChild(row);
+            });
+
+            // Reactive State Machine for Payment Verification & Cooking Countdown
+            let timer = null;
+            let totalSeconds = 10 * 60 + 15; // 10 minutes 15 seconds default
+            const countdownEl = document.getElementById("pickupCountdown");
+            const countdownCard = document.getElementById("countdownCard");
+            const awaitingApprovalCard = document.getElementById("awaitingApprovalCard");
+            const statusHeaderTitle = document.getElementById("statusHeaderTitle");
+            const statusSubtitleText = document.getElementById("statusSubtitleText");
+            const statusCheckmarkContainer = document.getElementById("statusCheckmarkContainer");
+
+            function checkOrderApproval() {
+                const adminOrders = JSON.parse(localStorage.getItem("munch_orders")) || [];
+                const matchedAdminOrder = adminOrders.find(o => o.id === latestOrder.id);
+                
+                // If status is anything other than "Paid (Awaiting Approval)" or "Pending", it means it's approved and preparing!
+                const isApproved = matchedAdminOrder && 
+                                   matchedAdminOrder.status !== "Paid (Awaiting Approval)" && 
+                                   matchedAdminOrder.status !== "Pending";
+                
+                if (isApproved) {
+                    // Transition to Approved & Cooking State
+                    awaitingApprovalCard.style.display = "none";
+                    countdownCard.style.display = "block";
+                    
+                    statusHeaderTitle.innerHTML = `Payment Approved & Cooking! 🍳`;
+                    statusSubtitleText.innerHTML = `Your payment was verified by canteen staff. Order preparation has commenced.`;
+                    
+                    // Display success checkmark animation
+                    if (!statusCheckmarkContainer.querySelector(".checkmark")) {
+                        statusCheckmarkContainer.innerHTML = `
+                            <div class="checkmark">
+                                <svg class="checkmark-circle" viewBox="0 0 52 52">
+                                    <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                                </svg>
+                                <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                            </div>
+                        `;
+                    }
+                    
+                    // Start Countdown timer if not already running
+                    if (!timer) {
+                        timer = setInterval(() => {
+                            if (totalSeconds <= 0) {
+                                clearInterval(timer);
+                                countdownEl.innerHTML = `<span class="text-success fw-bold"><i class="fa-solid fa-circle-check"></i> Ready for Pickup!</span>`;
+                                showToast("Your canteen order is ready for pickup!", "success");
+                                return;
+                            }
+
+                            totalSeconds--;
+                            const mins = Math.floor(totalSeconds / 60);
+                            const secs = totalSeconds % 60;
+                            countdownEl.innerText = `${mins} mins ${secs} secs`;
+                        }, 1000);
+                        
+                        showToast("Payment verified! Canteen kitchen has started preparing your order.", "success");
+                    }
+                    
+                    return true;
+                } else {
+                    // Display Awaiting Approval State
+                    countdownCard.style.display = "none";
+                    awaitingApprovalCard.style.display = "block";
+                    
+                    statusHeaderTitle.innerHTML = `Awaiting Payment Approval... ⏳`;
+                    statusSubtitleText.innerHTML = `Canteen staff is verifying your transaction. Your order will begin preparing immediately upon approval.`;
+                    
+                    // Display spinner loading state
+                    statusCheckmarkContainer.innerHTML = `
+                        <div class="d-flex align-items-center justify-content-center mx-auto bg-warning bg-opacity-10 text-warning rounded-circle shadow-sm border border-warning border-opacity-25" style="width: 80px; height: 80px;">
+                            <i class="fa-solid fa-spinner fa-spin fs-2"></i>
+                        </div>
+                    `;
+                    
+                    return false;
+                }
+            }
+
+            // Perform initial check and start polling interval
+            const initiallyApproved = checkOrderApproval();
+            if (!initiallyApproved) {
+                const pollInterval = setInterval(() => {
+                    const approved = checkOrderApproval();
+                    if (approved) {
+                        clearInterval(pollInterval);
+                    }
+                }, 1000);
+            }
+
+            // Populating Invoice Details Modal
+            const invoiceModal = new bootstrap.Modal(document.getElementById("invoiceModal"));
+            
+            document.getElementById("viewInvoiceBtn").addEventListener("click", () => {
+                const user = JSON.parse(localStorage.getItem("munch_user")) || {};
+                
+                // Set text fields
+                document.getElementById("invoiceRefNo").innerText = latestOrder.id;
+                document.getElementById("invoiceStudentName").innerText = user.name || "Rahul Verma";
+                document.getElementById("invoiceStudentCollege").innerText = user.college || "National Institute of Technology";
+                document.getElementById("invoiceStudentAddress").innerText = user.address || "Room 304, Hostel Block B, NIT Campus";
+                document.getElementById("invoiceDate").innerText = latestOrder.date || new Date().toISOString().slice(0,10);
+                
+                // Dynamic Status check
+                // Find order in global admin order array to see if payment was approved!
+                const adminOrders = JSON.parse(localStorage.getItem("munch_orders")) || [];
+                const matchedAdminOrder = adminOrders.find(o => o.id === latestOrder.id);
+                const isApproved = matchedAdminOrder && (matchedAdminOrder.status !== "Paid (Awaiting Approval)");
+                
+                const statusBadge = document.getElementById("invoicePaymentStatus");
+                if (isApproved) {
+                    statusBadge.innerText = "PAID (APPROVED & COOKING)";
+                    statusBadge.className = "badge bg-success";
+                } else {
+                    statusBadge.innerText = "PAID (AWAITING STAFF APPROVAL)";
+                    statusBadge.className = "badge bg-warning text-dark";
+                }
+
+                // Populate invoice line items
+                const tableBody = document.getElementById("invoiceItemsTableBody");
+                tableBody.innerHTML = "";
+                
+                latestOrder.items.forEach(item => {
+                    const tr = document.createElement("tr");
+                    tr.className = "text-dark";
+                    tr.innerHTML = `
+                        <td>
+                            <strong class="text-dark">${item.name}</strong><br>
+                            <span class="small text-muted">Canteen Fresh Prepared</span>
+                        </td>
+                        <td class="text-end text-dark">₹${item.price}</td>
+                        <td class="text-center text-dark">${item.quantity}</td>
+                        <td class="text-end text-dark fw-bold">₹${item.price * item.quantity}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+
+                document.getElementById("invoiceSubtotal").innerText = `₹${latestOrder.total}`;
+                document.getElementById("invoiceGrandTotal").innerText = `₹${latestOrder.total}`;
+
+                invoiceModal.show();
+            });
+
+            // Trigger Window Print PDF
+            document.getElementById("triggerPrintBtn").addEventListener("click", () => {
+                window.print();
+            });
+        });
+    </script>
+</body>
+</html>

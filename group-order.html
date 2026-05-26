@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munch Hub - Group Order Room</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        .graph-wrapper {
+            position: relative;
+            background: var(--bg-tertiary);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            height: 380px;
+        }
+        #mstCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="dashboard-sidebar d-flex flex-column justify-content-between">
+            <div>
+                <!-- Brand Title -->
+                <a href="index.html" class="d-flex align-items-center gap-2 fw-bold text-primary text-decoration-none mb-4" style="font-size: 1.5rem;">
+                    <i class="fa-solid fa-pizza-slice text-secondary"></i> MunchHub
+                </a>
+                
+                <!-- Profile Indicator -->
+                <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
+                    <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80" alt="Student Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="overflow-hidden">
+                        <h6 class="mb-0 fw-bold text-truncate profile-welcome-name">Rahul Verma</h6>
+                        <span class="text-muted small text-truncate d-block profile-welcome-college">NIT Campus</span>
+                    </div>
+                </div>
+
+                <!-- Menu Links -->
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item">
+                        <a href="dashboard.html" class="sidebar-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="mood-meals.html" class="sidebar-link"><i class="fa-solid fa-face-smile"></i> Mood Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="study-meals.html" class="sidebar-link"><i class="fa-solid fa-book"></i> Study Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="budget-meals.html" class="sidebar-link"><i class="fa-solid fa-wallet"></i> Budget Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="trending.html" class="sidebar-link"><i class="fa-solid fa-fire text-danger"></i> Trending Foods</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="group-order.html" class="sidebar-link active"><i class="fa-solid fa-people-group"></i> Group Orders</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="profile.html" class="sidebar-link"><i class="fa-solid fa-user"></i> Profile</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="cart.html" class="sidebar-link position-relative">
+                            <i class="fa-solid fa-cart-shopping"></i> My Cart
+                            <span class="position-absolute end-0 me-3 translate-middle-y badge rounded-pill bg-danger cart-count-badge font-weight-bold" style="font-size: 0.65rem; top: 50%;">0</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Logout Bottom -->
+            <div>
+                <hr class="border-secondary">
+                <a href="index.html" class="sidebar-link text-danger fw-semibold" onclick="localStorage.removeItem('munch_cart')"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Header -->
+            <div class="mb-5">
+                <span class="badge munch-badge badge-glow-primary mb-2"><i class="fa-solid fa-people-group"></i> Collaborative Ordering</span>
+                <h2 class="fw-bold mb-1">Munch Group Orders & Shared Room 👥</h2>
+                <p class="text-secondary mb-0">Start a group order session with friends, split costs instantly, and compute optimal common pickup terminals.</p>
+            </div>
+
+            <!-- Configuration Panels (Create/Join Group) -->
+            <div class="row g-4 mb-5" id="group-init-panel">
+                <div class="col-md-6">
+                    <div class="card glass-card p-4 text-center h-100">
+                        <div class="fs-1 mb-3 text-primary"><i class="fa-solid fa-folder-plus"></i></div>
+                        <h4 class="fw-bold">Create Group Cart</h4>
+                        <p class="text-secondary small mb-4">Start a brand new group order room. You'll receive a custom invite code to share with campus friends.</p>
+                        <button id="createGroupBtn" class="munch-btn munch-btn-primary w-100 py-3">
+                            Create Shared Room
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card glass-card p-4 text-center h-100">
+                        <div class="fs-1 mb-3 text-secondary"><i class="fa-solid fa-right-to-bracket"></i></div>
+                        <h4 class="fw-bold">Join Existing Room</h4>
+                        <p class="text-secondary small mb-3">Got a group invite code from your hostel floor or study group? Enter it below to join the shared cart.</p>
+                        
+                        <div class="input-group mb-3">
+                            <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="fa-solid fa-key"></i></span>
+                            <input type="text" id="groupCodeInput" class="form-control border-start-0 munch-input w-50" style="height: 50px;" placeholder="e.g. ROOM-8891">
+                        </div>
+                        
+                        <button id="joinGroupBtn" class="munch-btn munch-btn-outline w-100 py-3">
+                            Join Shared Room
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shared Room Dashboard (Hidden Initially, Synced in localState) -->
+            <div class="row g-4" id="group-active-panel" style="display: none;">
+                
+                <!-- Shared Cart Table & Bill Split -->
+                <div class="col-lg-6">
+                    <!-- Members List -->
+                    <div class="card glass-card p-4 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0"><i class="fa-solid fa-users text-primary"></i> Group Members</h5>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge badge-glow-secondary munch-badge text-monospace fs-6" id="activeRoomCode">ROOM-CODE</span>
+                                <button class="btn btn-sm btn-outline-primary py-1 px-2 rounded-3 border-secondary text-primary" id="copyInviteLinkBtn" title="Copy Invite Link" style="font-size: 0.8rem;">
+                                    <i class="fa-solid fa-share-nodes"></i> Share Link
+                                </button>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 mb-3" id="members-list-container">
+                            <!-- Members tags injected -->
+                        </div>
+
+                        <!-- Manual Member Adder Form -->
+                        <div class="p-3 rounded-3 border bg-secondary bg-opacity-10">
+                            <h6 class="fw-bold mb-2 small text-secondary"><i class="fa-solid fa-user-plus text-primary"></i> Add Student to Room</h6>
+                            <div class="row g-2 mb-2">
+                                <div class="col-8">
+                                    <input type="text" id="newMemberName" class="form-control form-control-sm munch-input w-100 py-2 text-white bg-transparent" placeholder="Friend's Name">
+                                </div>
+                                <div class="col-4">
+                                    <select id="newMemberHostel" class="form-select form-select-sm munch-input w-100 py-2 text-white bg-transparent" style="cursor: pointer;">
+                                        <option value="A" class="bg-dark text-white">Hostel A</option>
+                                        <option value="B" class="bg-dark text-white">Hostel B</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <select id="newMemberDish" class="form-select form-select-sm munch-input w-100 py-2 text-white bg-transparent" style="cursor: pointer;">
+                                    <!-- Populated dynamically with foods -->
+                                </select>
+                            </div>
+                            <div id="customDishFields" style="display: none;" class="mb-2">
+                                <div class="row g-2">
+                                    <div class="col-8">
+                                        <input type="text" id="customDishName" class="form-control form-control-sm munch-input w-100 py-2 text-white bg-transparent" placeholder="Custom Dish Name">
+                                    </div>
+                                    <div class="col-4">
+                                        <input type="number" id="customDishPrice" class="form-control form-control-sm munch-input w-100 py-2 text-white bg-transparent" placeholder="Price (₹)">
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="addMemberBtn" class="munch-btn munch-btn-primary w-100 py-2 small" style="padding: 0.5rem; font-size: 0.85rem;">
+                                <i class="fa-solid fa-plus"></i> Join Friend into Room
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Shared Cart -->
+                    <div class="card glass-card p-4 mb-4">
+                        <h5 class="fw-bold mb-4"><i class="fa-solid fa-basket-shopping text-secondary"></i> Room Shared Cart</h5>
+                        <div class="table-responsive">
+                            <table class="table align-middle small">
+                                <thead>
+                                    <tr>
+                                        <th>MEMBER</th>
+                                        <th>ITEM</th>
+                                        <th>PRICE</th>
+                                        <th>QTY</th>
+                                        <th>TOTAL</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="shared-cart-body">
+                                    <!-- Items loaded dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Split Bill Breakdown Preview -->
+                        <div class="mt-4 pt-3 border-top border-light-subtle">
+                            <h6 class="fw-bold text-secondary mb-3"><i class="fa-solid fa-receipt text-primary"></i> Equal Split Bill Preview</h6>
+                            <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded-3 border">
+                                <div>
+                                    <span class="small text-muted d-block">TOTAL SPLIT AMOUNT</span>
+                                    <h5 class="fw-bold text-dark mb-0">₹<span id="splitTotal">0</span></h5>
+                                </div>
+                                <div class="text-end">
+                                    <span class="small text-muted d-block">PER MEMBER SHARE</span>
+                                    <h5 class="fw-bold text-primary mb-0">₹<span id="splitPerPerson">0</span></h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MST Visualizer Panel -->
+                <div class="col-lg-6">
+                    <div class="card glass-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                <h5 class="fw-bold mb-0"><i class="fa-solid fa-circle-nodes text-primary"></i> Optimal Shared Pickup Spot</h5>
+                                <span class="badge bg-dark rounded-pill">Smart Location Optimizer</span>
+                            </div>
+                            
+                            <p class="text-secondary small mb-4">Click <strong>Calculate Pickup Spot</strong>. Our campus planner maps all active members' hostels, runs a central node search on the subgraph, and identifies the absolute best pickup spot to minimize walking distance for everyone!</p>
+                            
+                            <!-- Graph Wrapper Canvas -->
+                            <div class="graph-wrapper mb-4">
+                                <canvas id="mstCanvas"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Result readout and button -->
+                        <div>
+                            <div id="mstResultPanel" class="p-3 bg-light rounded-3 border mb-4" style="display: none;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="fs-1 text-emerald"><i class="fa-solid fa-map-pin text-success"></i></div>
+                                    <div>
+                                        <span class="small text-muted d-block">RECOMMENDED MEETING POINT</span>
+                                        <h5 class="fw-bold text-success mb-1" id="mstCenterNodeName">Central Library Junction</h5>
+                                        <span class="text-muted small">Optimized path weight: <span id="mstPathWeight" class="fw-bold text-dark">5</span> units.</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button id="runMSTBtn" class="munch-btn munch-btn-secondary w-100 py-3">
+                                <i class="fa-solid fa-microchip"></i> Calculate Pickup Spot
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap & JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/daa-algorithms.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const createGroupBtn = document.getElementById("createGroupBtn");
+            const joinGroupBtn = document.getElementById("joinGroupBtn");
+            const groupCodeInput = document.getElementById("groupCodeInput");
+            
+            const groupInitPanel = document.getElementById("group-init-panel");
+            const groupActivePanel = document.getElementById("group-active-panel");
+            const activeRoomCode = document.getElementById("activeRoomCode");
+
+            const sharedCartBody = document.getElementById("shared-cart-body");
+            const splitTotal = document.getElementById("splitTotal");
+            const splitPerPerson = document.getElementById("splitPerPerson");
+            const membersContainer = document.getElementById("members-list-container");
+
+            const runMSTBtn = document.getElementById("runMSTBtn");
+            const mstResultPanel = document.getElementById("mstResultPanel");
+            const mstCenterNodeName = document.getElementById("mstCenterNodeName");
+            const mstPathWeight = document.getElementById("mstPathWeight");
+
+            const canvas = document.getElementById("mstCanvas");
+            const ctx = canvas.getContext("2d");
+
+            // Hardcoded members list for simulation
+            const activeGroupMembers = [
+                { name: "Rahul (You)", hostel: "A" },
+                { name: "Sameer J.", hostel: "B" },
+                { name: "Aditi Sen", hostel: "B" },
+                { name: "Rohit K.", hostel: "A" }
+            ];
+
+            const activeSharedCartItems = [
+                { member: "Rahul (You)", name: "Cheese Loaded Fries", price: 110, qty: 1 },
+                { member: "Sameer J.", name: "Double Shot Cappuccino", price: 90, qty: 1 },
+                { member: "Aditi Sen", name: "Butter Chicken Burger", price: 140, qty: 1 },
+                { member: "Rohit K.", name: "Veg Steam Momos (6 pcs)", price: 60, qty: 2 }
+            ];
+
+            function handleOpenRoom(roomCode) {
+                groupInitPanel.style.display = "none";
+                groupActivePanel.style.display = "flex";
+                activeRoomCode.innerText = roomCode;
+
+                // Set up canvas dimensions
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = canvas.parentElement.clientHeight;
+
+                populateDishDropdown();
+                renderSharedCart();
+                drawCampusGraph([]); // Initial clean graph
+                showToast(`Shared Room ${roomCode} Activated!`);
+            }
+
+            createGroupBtn.addEventListener("click", () => {
+                const code = `ROOM-${Math.floor(1000 + Math.random() * 9000)}`;
+                handleOpenRoom(code);
+            });
+
+            joinGroupBtn.addEventListener("click", () => {
+                const code = groupCodeInput.value.trim().toUpperCase();
+                if (code.length < 5) {
+                    showToast("Please enter a valid group room code.", "error");
+                    return;
+                }
+                handleOpenRoom(code);
+            });
+
+            // 1. Dynamic Dish Dropdown Population
+            function populateDishDropdown() {
+                const dishSelect = document.getElementById("newMemberDish");
+                if (!dishSelect) return;
+
+                const foods = JSON.parse(localStorage.getItem("munch_foods")) || MunchData.foods;
+                dishSelect.innerHTML = '<option value="" class="bg-dark text-white">-- Choose Dish from Menu --</option>';
+                
+                foods.forEach(food => {
+                    const opt = document.createElement("option");
+                    opt.value = food.id;
+                    opt.className = "bg-dark text-white";
+                    opt.innerText = `${food.name} (₹${food.price})`;
+                    dishSelect.appendChild(opt);
+                });
+
+                const customOpt = document.createElement("option");
+                customOpt.value = "custom";
+                customOpt.className = "bg-dark text-white";
+                customOpt.innerText = "➕ Type a Custom Dish...";
+                dishSelect.appendChild(customOpt);
+            }
+
+            // 2. Custom Dish Fields Toggle Listener
+            const dishSelect = document.getElementById("newMemberDish");
+            const customFields = document.getElementById("customDishFields");
+            if (dishSelect && customFields) {
+                dishSelect.addEventListener("change", () => {
+                    customFields.style.display = dishSelect.value === "custom" ? "block" : "none";
+                });
+            }
+
+            // 3. Copy Invite Link & Code Button
+            const copyInviteLinkBtn = document.getElementById("copyInviteLinkBtn");
+            if (copyInviteLinkBtn) {
+                copyInviteLinkBtn.addEventListener("click", () => {
+                    const roomCode = activeRoomCode.innerText;
+                    // Construct standard local invite link URL with room query parameter
+                    const inviteUrl = `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
+                    
+                    navigator.clipboard.writeText(inviteUrl).then(() => {
+                        showToast(`Link copied: ${inviteUrl}`);
+                    }).catch(() => {
+                        // Fallback copy
+                        const tempInput = document.createElement("input");
+                        tempInput.value = inviteUrl;
+                        document.body.appendChild(tempInput);
+                        tempInput.select();
+                        document.execCommand("copy");
+                        document.body.removeChild(tempInput);
+                        showToast(`Invite URL copied!`);
+                    });
+                });
+            }
+
+            // 4. Add New Member Button Handler with Custom/Selected Dish
+            const addMemberBtn = document.getElementById("addMemberBtn");
+            if (addMemberBtn) {
+                addMemberBtn.addEventListener("click", () => {
+                    const nameInput = document.getElementById("newMemberName");
+                    const hostelInput = document.getElementById("newMemberHostel");
+                    const customNameInput = document.getElementById("customDishName");
+                    const customPriceInput = document.getElementById("customDishPrice");
+
+                    const name = nameInput.value.trim();
+                    const hostel = hostelInput.value;
+                    const selectedDishVal = dishSelect.value;
+
+                    if (!name) {
+                        showToast("Please enter a student's name to add.", "error");
+                        return;
+                    }
+
+                    if (!selectedDishVal) {
+                        showToast("Please select or specify a dish.", "error");
+                        return;
+                    }
+
+                    // Avoid duplicate student names
+                    if (activeGroupMembers.some(m => m.name.toLowerCase() === name.toLowerCase())) {
+                        showToast(`${name} is already in the room!`, "error");
+                        return;
+                    }
+
+                    let finalDishName = "";
+                    let finalDishPrice = 0;
+
+                    // Handle custom text input
+                    if (selectedDishVal === "custom") {
+                        finalDishName = customNameInput.value.trim();
+                        finalDishPrice = parseInt(customPriceInput.value);
+
+                        if (!finalDishName || isNaN(finalDishPrice) || finalDishPrice <= 0) {
+                            showToast("Please enter a valid custom dish name and price.", "error");
+                            return;
+                        }
+                    } else {
+                        // Load chosen dish from storage
+                        const foods = JSON.parse(localStorage.getItem("munch_foods")) || MunchData.foods;
+                        const foundFood = foods.find(f => f.id === parseInt(selectedDishVal));
+                        if (!foundFood) {
+                            showToast("Selected dish was not found.", "error");
+                            return;
+                        }
+                        finalDishName = foundFood.name;
+                        finalDishPrice = foundFood.price;
+                    }
+
+                    // Add new student node to our array
+                    activeGroupMembers.push({ name: name, hostel: hostel });
+
+                    // Push the specified dish choice
+                    activeSharedCartItems.push({
+                        member: name,
+                        name: finalDishName,
+                        price: finalDishPrice,
+                        qty: 1
+                    });
+
+                    // Clear inputs
+                    nameInput.value = "";
+                    customNameInput.value = "";
+                    customPriceInput.value = "";
+                    dishSelect.value = "";
+                    customFields.style.display = "none";
+                    
+                    // Re-render shared layout!
+                    renderSharedCart();
+                    showToast(`${name} joined and ordered ${finalDishName}!`);
+                });
+            }
+
+            // 5. Auto-join check on URL query params (?room=ROOM-CODE)
+            const roomParam = getUrlParam("room");
+            if (roomParam && roomParam.startsWith("ROOM-")) {
+                handleOpenRoom(roomParam);
+            }
+
+            function renderSharedCart() {
+                // Populate Members list
+                membersContainer.innerHTML = "";
+                activeGroupMembers.forEach(m => {
+                    const tag = document.createElement("span");
+                    tag.className = "badge munch-badge badge-glow-primary py-2 px-3";
+                    tag.innerHTML = `<i class="fa-solid fa-user me-1 text-primary"></i> ${m.name} [Hostel ${m.hostel}]`;
+                    membersContainer.appendChild(tag);
+                });
+
+                // Populate shared cart rows
+                sharedCartBody.innerHTML = "";
+                let grandTotal = 0;
+                activeSharedCartItems.forEach(item => {
+                    const total = item.price * item.qty;
+                    grandTotal += total;
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td class="fw-semibold text-primary">${item.member}</td>
+                        <td class="fw-bold">${item.name}</td>
+                        <td>₹${item.price}</td>
+                        <td>${item.qty}</td>
+                        <td class="fw-bold text-dark">₹${total}</td>
+                    `;
+                    sharedCartBody.appendChild(row);
+                });
+
+                splitTotal.innerText = grandTotal;
+                splitPerPerson.innerText = (grandTotal / activeGroupMembers.length).toFixed(0);
+            }
+
+            // Draw Campus Graph on Canvas
+            function drawCampusGraph(mstEdges = [], centerNodeId = "") {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const nodes = MunchData.campusGraph.nodes;
+                const edges = MunchData.campusGraph.edges;
+
+                // Coordinates mapper helper (Scale to fit canvas dimensions nicely)
+                const mapX = (x) => 30 + ((x - 100) / 700) * (canvas.width - 60);
+                const mapY = (y) => 35 + ((y - 100) / 350) * (canvas.height - 70);
+
+                // 1. Draw regular edges
+                ctx.strokeStyle = "#cbd5e1";
+                ctx.lineWidth = 2;
+                edges.forEach(edge => {
+                    const fromNode = nodes.find(n => n.id === edge.from);
+                    const toNode = nodes.find(n => n.id === edge.to);
+                    if (fromNode && toNode) {
+                        ctx.beginPath();
+                        ctx.moveTo(mapX(fromNode.x), mapY(fromNode.y));
+                        ctx.lineTo(mapX(toNode.x), mapY(toNode.y));
+                        ctx.stroke();
+                        
+                        // Draw edge weight
+                        ctx.fillStyle = "#64748b";
+                        ctx.font = "bold 10px monospace";
+                        ctx.fillText(`${edge.weight}km`, (mapX(fromNode.x) + mapX(toNode.x))/2, (mapY(fromNode.y) + mapY(toNode.y))/2 - 5);
+                    }
+                });
+
+                // 2. Draw MST Highlight edges if computed
+                if (mstEdges.length > 0) {
+                    ctx.strokeStyle = "#ec4899"; // Pink highlighter
+                    ctx.lineWidth = 5;
+                    mstEdges.forEach(edge => {
+                        const fromNode = nodes.find(n => n.id === edge.from);
+                        const toNode = nodes.find(n => n.id === edge.to);
+                        if (fromNode && toNode) {
+                            ctx.beginPath();
+                            ctx.moveTo(mapX(fromNode.x), mapY(fromNode.y));
+                            ctx.lineTo(mapX(toNode.x), mapY(toNode.y));
+                            ctx.stroke();
+                        }
+                    });
+                }
+
+                // 3. Draw Nodes
+                nodes.forEach(node => {
+                    const nx = mapX(node.x);
+                    const ny = mapY(node.y);
+                    
+                    // Determine node visual type
+                    let fill = "#6366f1"; // Default Indigo
+                    let size = 12;
+                    let isSpecial = false;
+                    
+                    if (node.type === 'hostel') {
+                        fill = "#f59e0b"; // Gold for hostels
+                        size = 14;
+                    } else if (node.type === 'restaurant') {
+                        fill = "#10b981"; // Emerald for restaurants
+                        size = 14;
+                    }
+                    
+                    if (node.id === centerNodeId) {
+                        fill = "#ec4899"; // Pink highlight for MST central hub
+                        size = 20;
+                        isSpecial = true;
+                    }
+
+                    // Circle shadow/glow
+                    ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
+                    ctx.shadowBlur = 8;
+                    
+                    ctx.fillStyle = fill;
+                    ctx.beginPath();
+                    ctx.arc(nx, ny, size, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    // Clear shadow for node outlines
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = "#ffffff";
+                    ctx.lineWidth = 2.5;
+                    ctx.stroke();
+
+                    // Text labels
+                    ctx.fillStyle = "#1e293b";
+                    ctx.font = isSpecial ? "bold 12px var(--font-primary)" : "bold 10px var(--font-primary)";
+                    ctx.fillText(node.name, nx - 40, ny - (size + 5));
+                });
+            }
+
+            // Execute DAA MST Kruskal solver!
+            runMSTBtn.addEventListener("click", () => {
+                // Collect subgraph nodes dynamically from the active members' hostels
+                const subgraphNodes = Array.from(new Set(activeGroupMembers.map(m => m.hostel)));
+                if (!subgraphNodes.includes("C")) subgraphNodes.push("C");
+                if (!subgraphNodes.includes("J")) subgraphNodes.push("J");
+                if (!subgraphNodes.includes("K")) subgraphNodes.push("K");
+                const fullGraphEdges = MunchData.campusGraph.edges;
+                
+                // Run Kruskal MST!
+                const result = solveMSTKruskal(subgraphNodes, fullGraphEdges);
+                
+                // Highlight result visual panel
+                mstResultPanel.style.display = "block";
+                const centerNode = MunchData.campusGraph.nodes.find(n => n.id === result.centralNode);
+                mstCenterNodeName.innerText = centerNode ? centerNode.name : "Central Junction Node";
+                mstPathWeight.innerText = `${result.totalWeight} km`;
+
+                // Draw highlighted MST path and center node!
+                drawCampusGraph(result.mstEdges, result.centralNode);
+                showToast("Central delivery pickup spot calculated successfully!");
+            });
+
+        });
+    </script>
+</body>
+</html>

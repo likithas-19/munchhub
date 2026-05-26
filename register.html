@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munch Hub - Register</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+        .auth-container {
+            max-width: 500px;
+            width: 90%;
+        }
+        .auth-card {
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(12px);
+            padding: 2.5rem;
+            transition: var(--transition-smooth);
+        }
+        [data-theme="dark"] .auth-card {
+            background: rgba(17, 24, 39, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <!-- Brand Title -->
+        <div class="text-center mb-4 text-white">
+            <h1 class="fw-bold d-flex align-items-center justify-content-center gap-2">
+                <i class="fa-solid fa-pizza-slice"></i> MunchHub
+            </h1>
+            <p class="text-white-50">Smart Student Dining Portal</p>
+        </div>
+
+        <div class="card auth-card">
+            <h3 class="fw-bold mb-2 text-center">Join Munch Hub</h3>
+            <p class="text-secondary small text-center mb-4">Create your student account to unlock smart budgeting.</p>
+
+            <form id="registerForm">
+                <!-- Full Name -->
+                <div class="mb-3">
+                    <label class="form-label small text-secondary fw-semibold">FULL NAME</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="fa-solid fa-user"></i></span>
+                        <input type="text" id="fullname" class="form-control border-start-0 munch-input w-75" placeholder="Rahul Verma" required>
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="mb-3">
+                    <label class="form-label small text-secondary fw-semibold">COLLEGE EMAIL</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="fa-solid fa-envelope"></i></span>
+                        <input type="email" id="email" class="form-control border-start-0 munch-input w-75" placeholder="rahul@college.edu" required>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <!-- Phone Number -->
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label class="form-label small text-secondary fw-semibold">PHONE NUMBER</label>
+                        <input type="tel" id="phone" class="form-control munch-input" placeholder="+91 98765 43210" required>
+                    </div>
+                    <!-- College Name -->
+                    <div class="col-md-6">
+                        <label class="form-label small text-secondary fw-semibold">COLLEGE NAME</label>
+                        <input type="text" id="college" class="form-control munch-input" placeholder="NIT Campus" required>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <!-- Password -->
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label small text-secondary fw-semibold mb-0">PASSWORD</label>
+                            <a href="#" class="small text-primary text-decoration-none fw-bold" id="generatePasswordBtn"><i class="fa-solid fa-key text-primary me-1"></i> Suggest Strong</a>
+                        </div>
+                        <input type="password" id="password" class="form-control munch-input" placeholder="••••••••" required>
+                    </div>
+                    <!-- Confirm Password -->
+                    <div class="col-md-6">
+                        <label class="form-label small text-secondary fw-semibold">CONFIRM PASSWORD</label>
+                        <input type="password" id="confirmPassword" class="form-control munch-input" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <!-- Register Button -->
+                <button type="submit" class="munch-btn munch-btn-primary w-100 py-3 mb-3">
+                    Register Account <i class="fa-solid fa-user-plus ms-2"></i>
+                </button>
+            </form>
+
+            <!-- Links to Login -->
+            <p class="text-center small text-secondary mb-0">
+                Already have an account? <a href="login.html" class="text-primary fw-bold text-decoration-none">Sign In here</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Bootstrap & JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/daa-algorithms.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        // Password Suggestion Generator
+        document.getElementById("generatePasswordBtn").addEventListener("click", (e) => {
+            e.preventDefault();
+            
+            const length = 14;
+            const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const lowercase = "abcdefghijklmnopqrstuvwxyz";
+            const numbers = "0123456789";
+            const symbols = "!@#$%^&*()_+~`|}{[]:;?><,./-=";
+            
+            const allChars = uppercase + lowercase + numbers + symbols;
+            let password = "";
+            
+            // Guarantee at least one character from each set
+            password += uppercase[Math.floor(Math.random() * uppercase.length)];
+            password += lowercase[Math.floor(Math.random() * lowercase.length)];
+            password += numbers[Math.floor(Math.random() * numbers.length)];
+            password += symbols[Math.floor(Math.random() * symbols.length)];
+            
+            for (let i = 4; i < length; i++) {
+                password += allChars[Math.floor(Math.random() * allChars.length)];
+            }
+            
+            // Shuffle password characters
+            password = password.split('').sort(() => 0.5 - Math.random()).join('');
+            
+            // Populate and change field type to text temporarily so they can read it!
+            const passInput = document.getElementById("password");
+            const confInput = document.getElementById("confirmPassword");
+            
+            passInput.value = password;
+            confInput.value = password;
+            
+            passInput.type = "text";
+            confInput.type = "text";
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(password).then(() => {
+                showToast("Strong Password Suggested & Copied to Clipboard!");
+            });
+
+            // Revert back to password type after 5 seconds
+            setTimeout(() => {
+                passInput.type = "password";
+                confInput.type = "password";
+            }, 6000);
+        });
+
+        document.getElementById("registerForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const fullname = document.getElementById("fullname").value;
+            const email = document.getElementById("email").value;
+            const phone = document.getElementById("phone").value;
+            const college = document.getElementById("college").value;
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+
+            if (password !== confirmPassword) {
+                showToast("Passwords do not match!", "error");
+                return;
+            }
+
+            const newUser = {
+                name: fullname,
+                email: email,
+                phone: phone,
+                college: college,
+                address: `Hostel Block B, ${college}`,
+                favorites: [102, 108],
+                orders: []
+            };
+
+            localStorage.setItem("munch_user", JSON.stringify(newUser));
+            showToast("Registration Successful! Redirecting to login.");
+            
+            setTimeout(() => {
+                window.location.href = "login.html";
+            }, 1200);
+        });
+    </script>
+</body>
+</html>

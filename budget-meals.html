@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munch Hub - Budget Optimizer</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        .matrix-table-wrapper {
+            max-height: 350px;
+            overflow-auto: auto;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+        .table-dp {
+            margin-bottom: 0;
+        }
+        .table-dp th {
+            background: var(--bg-tertiary);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="dashboard-sidebar d-flex flex-column justify-content-between">
+            <div>
+                <!-- Brand Title -->
+                <a href="index.html" class="d-flex align-items-center gap-2 fw-bold text-primary text-decoration-none mb-4" style="font-size: 1.5rem;">
+                    <i class="fa-solid fa-pizza-slice text-secondary"></i> MunchHub
+                </a>
+                
+                <!-- Profile Indicator -->
+                <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
+                    <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80" alt="Student Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="overflow-hidden">
+                        <h6 class="mb-0 fw-bold text-truncate profile-welcome-name">Rahul Verma</h6>
+                        <span class="text-muted small text-truncate d-block profile-welcome-college">NIT Campus</span>
+                    </div>
+                </div>
+
+                <!-- Menu Links -->
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item">
+                        <a href="dashboard.html" class="sidebar-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="mood-meals.html" class="sidebar-link"><i class="fa-solid fa-face-smile"></i> Mood Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="study-meals.html" class="sidebar-link"><i class="fa-solid fa-book"></i> Study Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="budget-meals.html" class="sidebar-link active"><i class="fa-solid fa-wallet"></i> Budget Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="trending.html" class="sidebar-link"><i class="fa-solid fa-fire text-danger"></i> Trending Foods</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="group-order.html" class="sidebar-link"><i class="fa-solid fa-people-group"></i> Group Orders</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="profile.html" class="sidebar-link"><i class="fa-solid fa-user"></i> Profile</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="cart.html" class="sidebar-link position-relative">
+                            <i class="fa-solid fa-cart-shopping"></i> My Cart
+                            <span class="position-absolute end-0 me-3 translate-middle-y badge rounded-pill bg-danger cart-count-badge font-weight-bold" style="font-size: 0.65rem; top: 50%;">0</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Logout Bottom -->
+            <div>
+                <hr class="border-secondary">
+                <a href="index.html" class="sidebar-link text-danger fw-semibold" onclick="localStorage.removeItem('munch_cart')"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Header -->
+            <div class="mb-5">
+                <span class="badge munch-badge badge-glow-primary mb-2"><i class="fa-solid fa-brain"></i> Smart Planning</span>
+                <h2 class="fw-bold mb-1">Smart Budget Optimizer 💰</h2>
+                <p class="text-secondary mb-0">Enter your exact budget, and our smart planner will calculate the absolute best combination of canteen meals possible!</p>
+            </div>
+
+            <div class="row g-4 mb-5">
+                <!-- Left Panel: Budget Configuration Form -->
+                <div class="col-lg-5">
+                    <div class="card glass-card p-4 h-100">
+                        <h5 class="fw-bold mb-4"><i class="fa-solid fa-sliders text-primary"></i> Budget Setups</h5>
+                        
+                        <form id="knapsackForm">
+                            <!-- Budget Limit Input -->
+                            <div class="mb-4">
+                                <label class="form-label d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-semibold small text-secondary">ENTER MAXIMUM BUDGET</span>
+                                    <span class="h4 text-primary mb-0 fw-bold">₹<span id="budgetValueText">150</span></span>
+                                </label>
+                                <input type="range" class="form-range" id="budgetRange" min="50" max="400" step="10" value="150">
+                                <div class="d-flex justify-content-between text-muted small mt-1">
+                                    <span>₹50</span>
+                                    <span>₹200</span>
+                                    <span>₹400</span>
+                                </div>
+                            </div>
+
+                            <!-- Optimization Criteria -->
+                            <div class="mb-4">
+                                <label class="form-label small text-secondary fw-semibold">OPTIMIZE DINING ACCORDING TO</label>
+                                <select class="form-select munch-input" id="utilityCriteria">
+                                    <option value="rating">Food Quality (Ratings)</option>
+                                    <option value="popularity">Popularity (Most Ordered)</option>
+                                    <option value="calories">Energy Content (Calories)</option>
+                                </select>
+                            </div>
+
+                            <!-- Knapsack Run Button -->
+                            <button type="submit" class="munch-btn munch-btn-primary w-100 py-3 mt-2">
+                                <i class="fa-solid fa-calculator"></i> Run Budget Optimizer
+                            </button>
+                        </form>
+
+                        <div class="mt-4 p-3 bg-light rounded-3 border">
+                                <span class="badge bg-secondary mb-2">Shopping Note</span>
+                                <p class="small text-secondary mb-0">Our optimizer calculates a smart combinatorics map. It scans available canteen dishes and finds the single best combination within your exact budget capacity.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Results & DP Table Matrix -->
+                <div class="col-lg-7">
+                    <div class="card glass-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="fw-bold mb-4"><i class="fa-solid fa-list-check text-primary"></i> Optimal Combo Results</h5>
+                            
+                            <!-- Combo stats summary -->
+                            <div class="row g-3 mb-4" id="combo-summary" style="display: none;">
+                                <div class="col-6">
+                                    <div class="p-3 bg-light rounded-3 border text-center">
+                                        <span class="text-muted small d-block">TOTAL SPENT</span>
+                                        <h4 class="fw-bold text-primary mb-0">₹<span id="spentVal">0</span></h4>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 bg-light rounded-3 border text-center">
+                                        <span class="text-muted small d-block">TOTAL UTILITY</span>
+                                        <h4 class="fw-bold text-secondary mb-0"><span id="utilVal">0</span></h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- List of chosen items in combination -->
+                            <div class="d-flex flex-column gap-3 mb-4" id="chosen-items-list">
+                                <div class="text-center py-5 text-muted">
+                                    <i class="fa-solid fa-wallet fs-1 mb-3 text-secondary"></i>
+                                    <p class="mb-0">Enter a budget and click run to calculate combinations.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Checkout Combo Button -->
+                        <button id="addComboToCartBtn" class="munch-btn munch-btn-secondary w-100 py-3" style="display: none;">
+                            <i class="fa-solid fa-cart-shopping"></i> Add Optimal Combo to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Bootstrap & JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/daa-algorithms.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const foods = JSON.parse(localStorage.getItem("munch_foods")) || [];
+            
+            const budgetRange = document.getElementById("budgetRange");
+            const budgetValueText = document.getElementById("budgetValueText");
+            
+            budgetRange.addEventListener("input", (e) => {
+                budgetValueText.innerText = e.target.value;
+            });
+
+            let currentCombo = []; // Keep track of calculated optimal combo
+
+            document.getElementById("knapsackForm").addEventListener("submit", (e) => {
+                e.preventDefault();
+                const budget = parseInt(budgetRange.value);
+                const criteria = document.getElementById("utilityCriteria").value;
+
+                // Run budget calculation
+                const result = solveBudgetKnapsack(budget, foods, criteria);
+                currentCombo = result.selectedItems;
+
+                // Render Summary
+                document.getElementById("combo-summary").style.display = "flex";
+                document.getElementById("spentVal").innerText = result.totalSpent;
+                
+                const unit = criteria === 'calories' ? ' kcal' : ' / 5.0';
+                document.getElementById("utilVal").innerText = result.totalUtility + unit;
+
+                // Render Chosen Items
+                const listContainer = document.getElementById("chosen-items-list");
+                listContainer.innerHTML = "";
+                
+                if (result.selectedItems.length > 0) {
+                    result.selectedItems.forEach(item => {
+                        const itemDiv = document.createElement("div");
+                        itemDiv.className = "d-flex align-items-center justify-content-between p-3 rounded-3 border bg-white shadow-sm hover-scale cursor-pointer";
+                        itemDiv.setAttribute("data-food-id", item.id);
+                        itemDiv.innerHTML = `
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="${item.image}" class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0 fw-bold text-dark">${item.name}</h6>
+                                    <span class="text-muted small">${item.category}</span>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <h6 class="mb-0 fw-bold text-primary">₹${item.price}</h6>
+                                <span class="text-warning small"><i class="fa-solid fa-star"></i> ${item.rating}</span>
+                            </div>
+                        `;
+                        listContainer.appendChild(itemDiv);
+                    });
+                    
+                    document.getElementById("addComboToCartBtn").style.display = "block";
+                } else {
+                    listContainer.innerHTML = `
+                        <div class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-circle-exclamation fs-1 mb-2 text-warning"></i>
+                            <p class="mb-0">Budget limit is too low to afford any single item!</p>
+                        </div>
+                    `;
+                    document.getElementById("addComboToCartBtn").style.display = "none";
+                }
+
+                showToast("Optimal meal combo calculated successfully!");
+            });
+
+            // Add entire combo items to shopping cart
+            document.getElementById("addComboToCartBtn").addEventListener("click", () => {
+                if (currentCombo.length > 0) {
+                    currentCombo.forEach(item => {
+                        CartManager.add(item.id, 1);
+                    });
+                    showToast("Added all optimal combo meals to your shopping cart!");
+                    setTimeout(() => {
+                        window.location.href = "cart.html";
+                    }, 800);
+                }
+            });
+
+            // Helper to render the actual DP Table
+            function renderDPMatrix(matrix, budget, items, criteria) {
+                const container = document.getElementById("matrixContainer");
+                if (!container) return;
+
+                // To fit properly in UI, let's step the budget column header by 10s (e.g. ₹0, ₹10, ₹20...)
+                const budgetCols = [];
+                for (let w = 0; w <= budget; w += 10) {
+                    budgetCols.push(w);
+                }
+
+                let html = `
+                    <table class="table table-bordered table-striped table-dp text-center font-monospace small">
+                        <thead>
+                            <tr>
+                                <th>Item / Cap</th>
+                                <th>₹0</th>
+                `;
+                
+                // Add column headers for budget increments of 10
+                for (let i = 1; i < budgetCols.length; i++) {
+                    html += `<th>₹${budgetCols[i]}</th>`;
+                }
+                
+                html += `
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                // Add row for item 0 (nothing selected)
+                html += `<tr><td class="fw-bold bg-light text-start text-nowrap">0 (No Items Chosen)</td>`;
+                budgetCols.forEach(col => {
+                    html += `<td class="text-muted">0</td>`;
+                });
+                html += `</tr>`;
+
+                // Add rows for each food item
+                for (let i = 1; i <= items.length; i++) {
+                    const item = items[i - 1];
+                    html += `<tr><td class="fw-bold bg-light text-start text-nowrap text-truncate" style="max-width: 140px;" title="${item.name}">${i}. ${item.name} (₹${item.price})</td>`;
+                    
+                    budgetCols.forEach(col => {
+                        // Get cell value from matrix K
+                        const val = matrix[i][col];
+                        
+                        // Highlight if it's the final optimum value!
+                        const isOptimum = (i === items.length && col === budgetCols[budgetCols.length - 1]);
+                        const cellClass = isOptimum ? 'knapsack-matrix-cell highlight font-weight-bold' : 'knapsack-matrix-cell';
+                        
+                        html += `<td class="${cellClass}">${val}</td>`;
+                    });
+                    
+                    html += `</tr>`;
+                }
+
+                html += `
+                        </tbody>
+                    </table>
+                `;
+                container.innerHTML = html;
+            }
+        });
+    </script>
+</body>
+</html>

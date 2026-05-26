@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munch Hub Admin - Profile Control</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="css/style.css" rel="stylesheet">
+    <!-- Session Router Security Guard -->
+    <script>
+        if (sessionStorage.getItem("munch_admin_session") !== "active") {
+            alert("Unauthorized access! Please login with valid Canteen Staff credentials.");
+            window.location.href = "admin-login.html";
+        }
+    </script>
+    <style>
+        /* Admin Dark Theme Overrides */
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        .admin-sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--glass-border);
+            padding: 2rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: var(--transition-smooth);
+        }
+        .admin-main {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 2.5rem;
+            transition: var(--transition-smooth);
+        }
+        @media (max-width: 991.98px) {
+            .admin-sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--glass-border);
+            }
+            .admin-main {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- Admin Sidebar Navigation -->
+        <aside class="admin-sidebar d-flex flex-column justify-content-between">
+            <div>
+                <!-- Brand Title -->
+                <a href="index.html" class="d-flex align-items-center gap-2 fw-bold text-primary text-decoration-none mb-4" style="font-size: 1.5rem;">
+                    <i class="fa-solid fa-pizza-slice text-secondary"></i> MunchHub <span class="badge bg-danger small" style="font-size: 0.55rem; padding: 0.3em 0.6em;">ADMIN</span>
+                </a>
+                
+                <!-- Profile Indicator -->
+                <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80" alt="Admin Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="overflow-hidden">
+                        <h6 class="mb-0 fw-bold text-truncate" id="sidebarAdminName">Dean O'Food</h6>
+                        <span class="text-muted small text-truncate d-block">Administrator</span>
+                    </div>
+                </div>
+
+                <!-- Menu Links -->
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item">
+                        <a href="admin-dashboard.html" class="sidebar-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="admin-manage-foods.html" class="sidebar-link"><i class="fa-solid fa-utensils"></i> Manage Foods</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="admin-manage-orders.html" class="sidebar-link"><i class="fa-solid fa-list-ol"></i> Manage Orders</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="admin-profile.html" class="sidebar-link active"><i class="fa-solid fa-id-card"></i> Admin Profile</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Logout Bottom -->
+            <div>
+                <hr class="border-secondary">
+                <a href="index.html" class="sidebar-link text-danger fw-semibold"><i class="fa-solid fa-arrow-right-from-bracket"></i> Exit Portal</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <div class="mb-5">
+                <span class="badge munch-badge badge-glow-primary mb-2"><i class="fa-solid fa-id-card"></i> Staff Security</span>
+                <h2 class="fw-bold mb-1">Administrator Profile 🛡️</h2>
+                <p class="text-secondary mb-0">Manage security settings, access levels, and basic contact details for staff logins.</p>
+            </div>
+
+            <div class="row g-5">
+                <!-- Left: Profile Info Card -->
+                <div class="col-lg-5">
+                    <div class="card glass-card p-4 text-center mb-4">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80" alt="Dean Profile" class="rounded-circle shadow mb-3 border border-danger border-3 mx-auto" style="width: 120px; height: 120px; object-fit: cover;">
+                        <h4 class="fw-bold mb-1" id="profileAdminName">Dean O'Food</h4>
+                        <p class="text-muted small mb-3">role.canteen@munchhub.edu</p>
+                        <span class="badge bg-danger rounded-pill py-2 px-3 small"><i class="fa-solid fa-shield-halved"></i> Root Administrator</span>
+                    </div>
+
+                    <!-- Statistics Summary Card -->
+                    <div class="card glass-card p-4">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-chart-line text-primary"></i> Operations Stats</h5>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary pb-2 small">
+                            <span class="text-secondary">MANAGED FOOD DISHES</span>
+                            <span class="fw-bold text-white fs-6" id="profFoodsCount">12</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-0 small">
+                            <span class="text-secondary">COMPLETED TRANSACTIONS</span>
+                            <span class="fw-bold text-white fs-6" id="profOrdersCount">42</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Editing Form -->
+                <div class="col-lg-7">
+                    <div class="card glass-card p-4">
+                        <h5 class="fw-bold mb-4 text-white"><i class="fa-solid fa-user-pen text-primary"></i> Edit Admin Staff Details</h5>
+                        <form id="adminEditForm">
+                            <div class="mb-3">
+                                <label class="form-label small text-secondary fw-semibold">ADMIN NAME</label>
+                                <input type="text" id="admName" class="form-control bg-transparent border-secondary text-white munch-input" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small text-secondary fw-semibold">EMAIL ADDRESS</label>
+                                <input type="email" id="admEmail" class="form-control bg-transparent border-secondary text-white munch-input" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small text-secondary fw-semibold">PHONE CONTACT</label>
+                                <input type="tel" id="admPhone" class="form-control bg-transparent border-secondary text-white munch-input" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label small text-secondary fw-semibold">ACCESS SECURITY ROLE DESCRIPTION</label>
+                                <input type="text" id="admRole" class="form-control bg-transparent border-secondary text-white munch-input" readonly>
+                            </div>
+                            <button type="submit" class="munch-btn munch-btn-primary w-100 py-3">
+                                <i class="fa-solid fa-floppy-disk"></i> Save Admin Profile
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap & JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/daa-algorithms.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const admin = JSON.parse(localStorage.getItem("munch_admin"));
+            if (!admin) return;
+
+            // Populate Form inputs
+            document.getElementById("admName").value = admin.name;
+            document.getElementById("admEmail").value = admin.email;
+            document.getElementById("admPhone").value = admin.phone;
+            document.getElementById("admRole").value = admin.role;
+
+            const foods = JSON.parse(localStorage.getItem("munch_foods")) || [];
+            const orders = JSON.parse(localStorage.getItem("munch_orders")) || [];
+
+            // Update details
+            document.getElementById("profFoodsCount").innerText = foods.length;
+            document.getElementById("profOrdersCount").innerText = orders.length;
+
+            // Submit form
+            document.getElementById("adminEditForm").addEventListener("submit", (e) => {
+                e.preventDefault();
+                admin.name = document.getElementById("admName").value;
+                admin.email = document.getElementById("admEmail").value;
+                admin.phone = document.getElementById("admPhone").value;
+
+                localStorage.setItem("munch_admin", JSON.stringify(admin));
+                
+                // Update header values
+                document.getElementById("sidebarAdminName").innerText = admin.name;
+                document.getElementById("profileAdminName").innerText = admin.name;
+
+                showToast("Admin staff profile updated successfully!");
+            });
+        });
+    </script>
+</body>
+</html>

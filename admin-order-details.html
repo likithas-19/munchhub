@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munch Hub Admin - Order Details</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="css/style.css" rel="stylesheet">
+    <script>
+        if (sessionStorage.getItem("munch_admin_session") !== "active") {
+            alert("Unauthorized access! Please login with valid Canteen Staff credentials.");
+            window.location.href = "admin-login.html";
+        }
+    </script>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        .admin-sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--glass-border);
+            padding: 2rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: var(--transition-smooth);
+        }
+        .admin-main {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 2.5rem;
+            transition: var(--transition-smooth);
+        }
+        @media (max-width: 991.98px) {
+            .admin-sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--glass-border);
+            }
+            .admin-main {
+                margin-left: 0;
+            }
+        }
+        
+        .step-pill {
+            flex: 1;
+            text-align: center;
+            padding: 1rem 0.5rem;
+            position: relative;
+        }
+        .step-pill::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 4px;
+            background: var(--glass-border);
+            z-index: 1;
+        }
+        .step-pill:last-child::after {
+            display: none;
+        }
+        .step-indicator {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--glass-border);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem auto;
+            position: relative;
+            z-index: 2;
+            font-weight: bold;
+            transition: var(--transition-smooth);
+        }
+        .step-pill.active .step-indicator {
+            background: var(--gradient-primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+        .step-pill.completed .step-indicator {
+            background: var(--accent-emerald);
+            color: white;
+            border-color: var(--accent-emerald);
+        }
+        .step-pill.completed::after {
+            background: var(--accent-emerald);
+        }
+        .step-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            position: relative;
+            z-index: 2;
+        }
+        .step-pill.active .step-label {
+            color: var(--primary);
+        }
+        .step-pill.completed .step-label {
+            color: var(--accent-emerald);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Admin Sidebar Navigation -->
+        <aside class="admin-sidebar d-flex flex-column justify-content-between">
+            <div>
+                <a href="index.html" class="d-flex align-items-center gap-2 fw-bold text-primary text-decoration-none mb-4" style="font-size: 1.5rem;">
+                    <i class="fa-solid fa-pizza-slice text-secondary"></i> MunchHub <span class="badge bg-danger small" style="font-size: 0.55rem; padding: 0.3em 0.6em;">ADMIN</span>
+                </a>
+                
+                <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80" alt="Admin Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="overflow-hidden">
+                        <h6 class="mb-0 fw-bold text-truncate" id="sidebarAdminName">Dean O'Food</h6>
+                        <span class="text-muted small text-truncate d-block">Administrator</span>
+                    </div>
+                </div>
+
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item">
+                        <a href="admin-dashboard.html" class="sidebar-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="admin-manage-foods.html" class="sidebar-link"><i class="fa-solid fa-utensils"></i> Manage Foods</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="admin-manage-orders.html" class="sidebar-link active"><i class="fa-solid fa-list-ol"></i> Manage Orders</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="admin-profile.html" class="sidebar-link"><i class="fa-solid fa-id-card"></i> Admin Profile</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div>
+                <hr class="border-secondary">
+                <a href="index.html" class="sidebar-link text-danger fw-semibold"><i class="fa-solid fa-arrow-right-from-bracket"></i> Exit Portal</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Back Button -->
+            <div class="mb-4">
+                <a href="admin-manage-orders.html" class="munch-btn munch-btn-outline py-2 px-3 small border-secondary text-secondary text-decoration-none">
+                    <i class="fa-solid fa-circle-left me-2"></i> Back to Orders
+                </a>
+            </div>
+
+            <!-- Header -->
+            <div class="mb-5">
+                <span class="badge munch-badge badge-glow-primary mb-2" id="orderStatusBadge">Preparing</span>
+                <h2 class="fw-bold mb-1">Canteen Order Details 📝</h2>
+                <p class="text-secondary mb-0">View student billings, itemized listings, and perform manual pipeline operations.</p>
+            </div>
+
+            <div class="row g-4" id="orderDetailsRow">
+                <!-- Left: Stepper & Items Details -->
+                <div class="col-lg-8">
+                    <!-- Progress Stepper -->
+                    <div class="card glass-card p-4 mb-4">
+                        <h5 class="fw-bold mb-4 text-white"><i class="fa-solid fa-stairs text-primary"></i> Order Pipeline Phase</h5>
+                        <div class="d-flex justify-content-between" id="progressStepper">
+                            <div class="step-pill" id="step-payment">
+                                <div class="step-indicator"><i class="fa-solid fa-receipt"></i></div>
+                                <div class="step-label">Payment Approved</div>
+                            </div>
+                            <div class="step-pill" id="step-cooking">
+                                <div class="step-indicator"><i class="fa-solid fa-fire-burner"></i></div>
+                                <div class="step-label">In Kitchen</div>
+                            </div>
+                            <div class="step-pill" id="step-delivery">
+                                <div class="step-indicator"><i class="fa-solid fa-motorcycle"></i></div>
+                                <div class="step-label">Out for Delivery</div>
+                            </div>
+                            <div class="step-pill" id="step-arrived">
+                                <div class="step-indicator"><i class="fa-solid fa-location-dot"></i></div>
+                                <div class="step-label">Arrived</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items Card -->
+                    <div class="card glass-card p-4">
+                        <h5 class="fw-bold mb-4 text-white"><i class="fa-solid fa-utensils text-primary"></i> Ordered Items</h5>
+                        <div class="table-responsive">
+                            <table class="table table-dark align-middle bg-transparent">
+                                <thead>
+                                    <tr class="small text-secondary">
+                                        <th>Dish Name</th>
+                                        <th class="text-end">Price</th>
+                                        <th class="text-center">Quantity</th>
+                                        <th class="text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="orderItemsTableBody" class="small">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Operations & Metadata -->
+                <div class="col-lg-4">
+                    <!-- Metadata card -->
+                    <div class="card glass-card p-4 mb-4">
+                        <h5 class="fw-bold mb-4 text-white"><i class="fa-solid fa-circle-info text-primary"></i> Order Metadata</h5>
+                        <div class="d-flex flex-column gap-3 small text-secondary">
+                            <div class="d-flex justify-content-between border-bottom border-secondary pb-2">
+                                <span>Order ID:</span>
+                                <strong class="text-white font-monospace" id="metaOrderId">-</strong>
+                            </div>
+                            <div class="d-flex justify-content-between border-bottom border-secondary pb-2">
+                                <span>Student Name:</span>
+                                <strong class="text-white" id="metaStudentName">-</strong>
+                            </div>
+                            <div class="d-flex justify-content-between border-bottom border-secondary pb-2">
+                                <span>Order Date:</span>
+                                <strong class="text-white" id="metaOrderDate">-</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Grand Total:</span>
+                                <strong class="text-primary fw-bold" id="metaGrandTotal">₹0</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pipeline Action Control card -->
+                    <div class="card glass-card p-4 border border-secondary text-center mb-4">
+                        <h5 class="fw-bold mb-4 text-white text-start"><i class="fa-solid fa-gears text-primary"></i> Dispatch Operations</h5>
+                        <div id="operationActionArea" class="d-grid gap-3">
+                            <!-- Dynamic button operations -->
+                        </div>
+                    </div>
+
+                    <!-- Delivery Route Track Card -->
+                    <div class="card glass-card p-4 border border-secondary text-center">
+                        <h5 class="fw-bold mb-3 text-white text-start"><i class="fa-solid fa-map-location-dot text-primary"></i> Map Operations</h5>
+                        <p class="small text-secondary text-start mb-4">Track the delivery partner's live position traversing NIT campus hostels.</p>
+                        <a id="adminTrackRouteBtn" href="#" class="munch-btn munch-btn-primary py-3 w-100 text-decoration-none">
+                            <i class="fa-solid fa-motorcycle me-2"></i> Track Delivery Partner
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap & JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const orderId = getUrlParam("id");
+            if (!orderId) {
+                alert("Order ID is missing!");
+                window.location.href = "admin-manage-orders.html";
+                return;
+            }
+
+            const admin = JSON.parse(localStorage.getItem("munch_admin"));
+            if (admin) {
+                document.getElementById("sidebarAdminName").innerText = admin.name;
+            }
+
+            function loadOrderDetails() {
+                const orders = JSON.parse(localStorage.getItem("munch_orders")) || [];
+                const matched = orders.find(o => o.id === orderId);
+                
+                if (!matched) {
+                    alert("Order not found!");
+                    window.location.href = "admin-manage-orders.html";
+                    return;
+                }
+
+                // 1. Badge Status
+                const statusBadge = document.getElementById("orderStatusBadge");
+                statusBadge.innerText = matched.status;
+                let badgeColor = "bg-warning text-dark";
+                if (matched.status === "Completed") badgeColor = "bg-success text-white";
+                else if (matched.status === "Preparing") badgeColor = "bg-info text-white";
+                else if (matched.status === "Ready") badgeColor = "bg-primary text-white";
+                else if (matched.status === "Dispatched" || matched.status === "Out for Delivery") badgeColor = "bg-warning text-dark";
+                else if (matched.status === "Paid (Awaiting Approval)") badgeColor = "bg-danger text-white badge-glow-secondary";
+                statusBadge.className = `badge munch-badge ${badgeColor} mb-2`;
+
+                // 2. Set Metadata Fields
+                document.getElementById("metaOrderId").innerText = matched.id;
+                document.getElementById("metaStudentName").innerText = matched.user;
+                document.getElementById("metaOrderDate").innerText = matched.date || new Date().toISOString().slice(0, 10);
+                document.getElementById("metaGrandTotal").innerText = `₹${matched.total}`;
+
+                // 3. Setup Delivery Route Tracking Link
+                const trackBtn = document.getElementById("adminTrackRouteBtn");
+                trackBtn.href = `admin-track-order.html?id=${matched.id}`;
+
+                // 4. Set Stepper Progress
+                updateStepperUI(matched.status);
+
+                // 5. Populate Ordered Items Detail Table
+                const tableBody = document.getElementById("orderItemsTableBody");
+                tableBody.innerHTML = "";
+                
+                const itemsStr = matched.items || "";
+                const itemsList = parseItemsString(itemsStr, matched.total);
+
+                itemsList.forEach(item => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td class="fw-bold text-white">${item.name}</td>
+                        <td class="text-end text-secondary">₹${item.price}</td>
+                        <td class="text-center text-secondary">${item.quantity}</td>
+                        <td class="text-end fw-bold text-primary">₹${item.price * item.quantity}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+
+                // 6. Populate dispatch button operation based on status
+                const actionArea = document.getElementById("operationActionArea");
+                actionArea.innerHTML = "";
+
+                if (matched.status === "Paid (Awaiting Approval)") {
+                    actionArea.innerHTML = `
+                        <div class="alert bg-danger bg-opacity-10 border border-danger text-danger p-3 mb-2 small text-start" style="border-radius:12px;">
+                            <i class="fa-solid fa-triangle-exclamation me-1 fa-beat"></i> Payment is awaiting verification. Approve this transaction after bank check.
+                        </div>
+                        <button class="munch-btn munch-btn-primary py-3 action-trigger-btn" data-target="Preparing"><i class="fa-solid fa-check-double me-1"></i> Approve Payment</button>
+                    `;
+                } else if (matched.status === "Pending") {
+                    actionArea.innerHTML = `
+                        <button class="munch-btn munch-btn-primary py-3 action-trigger-btn" data-target="Preparing"><i class="fa-solid fa-fire me-1"></i> Start Preparing</button>
+                    `;
+                } else if (matched.status === "Preparing") {
+                    actionArea.innerHTML = `
+                        <button class="munch-btn munch-btn-primary py-3 action-trigger-btn" data-target="Ready"><i class="fa-solid fa-bell me-1"></i> Mark as Ready</button>
+                    `;
+                } else if (matched.status === "Ready") {
+                    actionArea.innerHTML = `
+                        <button class="munch-btn munch-btn-primary py-3 action-trigger-btn" data-target="Dispatched" style="background: var(--gradient-secondary) !important;"><i class="fa-solid fa-motorcycle me-1"></i> Dispatch Rider</button>
+                    `;
+                } else if (matched.status === "Dispatched" || matched.status === "Out for Delivery") {
+                    actionArea.innerHTML = `
+                        <button class="munch-btn munch-btn-primary py-3 action-trigger-btn" data-target="Completed" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;"><i class="fa-solid fa-circle-check me-1"></i> Complete Order</button>
+                    `;
+                } else {
+                    actionArea.innerHTML = `
+                        <div class="alert bg-success bg-opacity-10 border border-success text-success p-3 mb-0 small text-center" style="border-radius:12px;">
+                            <i class="fa-solid fa-circle-check me-1"></i> Completed & Handed Over successfully.
+                        </div>
+                    `;
+                }
+
+                // Bind click operation
+                const actionBtn = actionArea.querySelector(".action-trigger-btn");
+                if (actionBtn) {
+                    actionBtn.addEventListener("click", () => {
+                        const targetStatus = actionBtn.getAttribute("data-target");
+                        
+                        // Update in local admin orders
+                        let ordersList = JSON.parse(localStorage.getItem("munch_orders")) || [];
+                        const index = ordersList.findIndex(o => o.id === orderId);
+                        
+                        if (index !== -1) {
+                            ordersList[index].status = targetStatus;
+                            localStorage.setItem("munch_orders", JSON.stringify(ordersList));
+
+                            // Sync back into student order log
+                            if (ordersList[index].user === "Rahul Verma") {
+                                const student = JSON.parse(localStorage.getItem("munch_user")) || {};
+                                if (student.orders) {
+                                    const studentIdx = student.orders.findIndex(o => o.id === orderId);
+                                    if (studentIdx !== -1) {
+                                        student.orders[studentIdx].status = targetStatus;
+                                        localStorage.setItem("munch_user", JSON.stringify(student));
+                                    }
+                                }
+                            }
+
+                            // Sync back into student latest order
+                            const latestOrder = JSON.parse(localStorage.getItem("munch_latest_order"));
+                            if (latestOrder && latestOrder.id === orderId) {
+                                latestOrder.status = targetStatus;
+                                localStorage.setItem("munch_latest_order", JSON.stringify(latestOrder));
+                            }
+
+                            showToast(`Order status advanced to "${targetStatus}"!`);
+                            loadOrderDetails();
+                            if (typeof updateAdminSidebarAlerts === "function") updateAdminSidebarAlerts();
+                        }
+                    });
+                }
+            }
+
+            function updateStepperUI(status) {
+                const stepPayment = document.getElementById("step-payment");
+                const stepCooking = document.getElementById("step-cooking");
+                const stepDelivery = document.getElementById("step-delivery");
+                const stepArrived = document.getElementById("step-arrived");
+
+                document.querySelectorAll(".step-pill").forEach(el => {
+                    el.classList.remove("active", "completed");
+                });
+
+                if (status === "Paid (Awaiting Approval)" || status === "Pending") {
+                    stepPayment.classList.add("active");
+                } else if (status === "Preparing") {
+                    stepPayment.classList.add("completed");
+                    stepCooking.classList.add("active");
+                } else if (status === "Ready" || status === "Dispatched" || status === "Out for Delivery") {
+                    stepPayment.classList.add("completed");
+                    stepCooking.classList.add("completed");
+                    stepDelivery.classList.add("active");
+                } else if (status === "Arrived" || status === "Completed") {
+                    stepPayment.classList.add("completed");
+                    stepCooking.classList.add("completed");
+                    stepDelivery.classList.add("completed");
+                    stepArrived.classList.add("completed");
+                }
+            }
+
+            // Parse helper for display items
+            function parseItemsString(str, total) {
+                if (!str) return [];
+                
+                const result = [];
+                const parts = str.split(", ");
+                
+                parts.forEach(part => {
+                    const match = part.match(/(.+?)\s*\((\d+)\)/);
+                    if (match) {
+                        const name = match[1].trim();
+                        const quantity = parseInt(match[2]);
+                        
+                        // Look up price from foods database
+                        const foods = JSON.parse(localStorage.getItem("munch_foods")) || [];
+                        const matchedFood = foods.find(f => f.name.toLowerCase() === name.toLowerCase());
+                        const price = matchedFood ? matchedFood.price : 50; 
+                        
+                        result.push({
+                            name: name,
+                            quantity: quantity,
+                            price: price
+                        });
+                    }
+                });
+
+                if (result.length === 0) {
+                    result.push({
+                        name: str || "Custom Culinary Prep Portion",
+                        quantity: 1,
+                        price: total || 150
+                    });
+                }
+                
+                return result;
+            }
+
+            // Initial load
+            loadOrderDetails();
+        });
+    </script>
+</body>
+</html>

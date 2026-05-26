@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munch Hub Admin - Manage Orders Pipeline</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="css/style.css" rel="stylesheet">
+    <!-- Session Router Security Guard -->
+    <script>
+        if (sessionStorage.getItem("munch_admin_session") !== "active") {
+            alert("Unauthorized access! Please login with valid Canteen Staff credentials.");
+            window.location.href = "admin-login.html";
+        }
+    </script>
+    <style>
+        /* Admin Dark Theme Overrides */
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        .admin-sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--glass-border);
+            padding: 2rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: var(--transition-smooth);
+        }
+        .admin-main {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 2.5rem;
+            transition: var(--transition-smooth);
+        }
+        @media (max-width: 991.98px) {
+            .admin-sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--glass-border);
+            }
+            .admin-main {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- Admin Sidebar Navigation -->
+        <aside class="admin-sidebar d-flex flex-column justify-content-between">
+            <div>
+                <!-- Brand Title -->
+                <a href="index.html" class="d-flex align-items-center gap-2 fw-bold text-primary text-decoration-none mb-4" style="font-size: 1.5rem;">
+                    <i class="fa-solid fa-pizza-slice text-secondary"></i> MunchHub <span class="badge bg-danger small" style="font-size: 0.55rem; padding: 0.3em 0.6em;">ADMIN</span>
+                </a>
+                
+                <!-- Profile Indicator -->
+                <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80" alt="Admin Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="overflow-hidden">
+                        <h6 class="mb-0 fw-bold text-truncate" id="sidebarAdminName">Dean O'Food</h6>
+                        <span class="text-muted small text-truncate d-block">Administrator</span>
+                    </div>
+                </div>
+
+                <!-- Menu Links -->
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item">
+                        <a href="admin-dashboard.html" class="sidebar-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="admin-manage-foods.html" class="sidebar-link"><i class="fa-solid fa-utensils"></i> Manage Foods</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="admin-manage-orders.html" class="sidebar-link active"><i class="fa-solid fa-list-ol"></i> Manage Orders</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="admin-profile.html" class="sidebar-link"><i class="fa-solid fa-id-card"></i> Admin Profile</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Logout Bottom -->
+            <div>
+                <hr class="border-secondary">
+                <a href="index.html" class="sidebar-link text-danger fw-semibold"><i class="fa-solid fa-arrow-right-from-bracket"></i> Exit Portal</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-start mb-5 flex-wrap gap-3">
+                <div>
+                    <span class="badge munch-badge badge-glow-primary mb-2"><i class="fa-solid fa-list-ol"></i> Active Kitchen Queue</span>
+                    <h2 class="fw-bold mb-1">Canteen Orders Preparation Pipeline 📋</h2>
+                    <p class="text-secondary mb-0">Advance incoming student orders through preparation phases and dispatch them when completed.</p>
+                </div>
+                
+                <!-- Filter Search -->
+                <input type="text" id="orderSearch" class="form-control bg-slate-800 border-secondary text-white munch-input" style="max-width: 300px;" placeholder="Search orders by user or ID...">
+            </div>
+
+            <!-- Active Queue Section -->
+            <div class="card glass-card p-4">
+                <h5 class="fw-bold mb-4 text-white"><i class="fa-solid fa-clock-rotate-left text-primary"></i> Active Kitchen Queue</h5>
+                
+                <div class="table-responsive">
+                    <table class="table align-middle table-dark bg-transparent">
+                        <thead>
+                            <tr class="small text-secondary">
+                                <th>ORDER REFERENCE</th>
+                                <th>STUDENT</th>
+                                <th>ITEMS SPECIFICS</th>
+                                <th>GRAND TOTAL</th>
+                                <th>PIPELINE PHASE</th>
+                                <th>DISPATCH OPERATIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="queue-table-body" class="small">
+                            <!-- Injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap & JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/daa-algorithms.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const admin = JSON.parse(localStorage.getItem("munch_admin"));
+            if (admin) {
+                document.getElementById("sidebarAdminName").innerText = admin.name;
+            }
+
+            const queueTableBody = document.getElementById("queue-table-body");
+            const orderSearch = document.getElementById("orderSearch");
+
+            let activeOrders = [];
+
+            function loadQueueTable(searchQuery = "") {
+                activeOrders = JSON.parse(localStorage.getItem("munch_orders")) || [];
+                queueTableBody.innerHTML = "";
+
+                let filtered = activeOrders;
+                if (searchQuery.trim()) {
+                    const cleanQ = searchQuery.toLowerCase().trim();
+                    filtered = activeOrders.filter(ord => 
+                        ord.id.toLowerCase().includes(cleanQ) || 
+                        ord.user.toLowerCase().includes(cleanQ) || 
+                        ord.items.toLowerCase().includes(cleanQ)
+                    );
+                }
+
+                if (filtered.length > 0) {
+                    filtered.forEach(ord => {
+                        let badgeColor = "bg-warning text-dark";
+                        if (ord.status === "Completed") badgeColor = "bg-success text-white";
+                        else if (ord.status === "Preparing") badgeColor = "bg-info text-white";
+                        else if (ord.status === "Ready") badgeColor = "bg-primary text-white";
+                        else if (ord.status === "Dispatched" || ord.status === "Out for Delivery") badgeColor = "bg-warning text-dark";
+                        else if (ord.status === "Paid (Awaiting Approval)") badgeColor = "bg-danger text-white badge-glow-secondary";
+
+                        // Action button state
+                        let actionButtonText = "";
+                        if (ord.status === "Paid (Awaiting Approval)") {
+                            actionButtonText = `<button class="btn btn-sm btn-success py-1 px-3 advance-btn" data-id="${ord.id}" data-target="Preparing"><i class="fa-solid fa-check-double me-1"></i> Approve Payment</button>`;
+                        } else if (ord.status === "Pending") {
+                            actionButtonText = `<button class="btn btn-sm btn-info py-1 px-3 advance-btn" data-id="${ord.id}" data-target="Preparing"><i class="fa-solid fa-fire me-1"></i> Start Prep</button>`;
+                        } else if (ord.status === "Preparing") {
+                            actionButtonText = `<button class="btn btn-sm btn-primary py-1 px-3 advance-btn" data-id="${ord.id}" data-target="Ready"><i class="fa-solid fa-bell me-1"></i> Mark Ready</button>`;
+                        } else if (ord.status === "Ready") {
+                            actionButtonText = `<button class="btn btn-sm btn-warning py-1 px-3 advance-btn" data-id="${ord.id}" data-target="Dispatched" style="color: #0f172a !important; font-weight: bold; border-radius: 8px;"><i class="fa-solid fa-motorcycle me-1"></i> Dispatch Rider</button>`;
+                        } else if (ord.status === "Dispatched" || ord.status === "Out for Delivery") {
+                            actionButtonText = `<button class="btn btn-sm btn-success py-1 px-3 advance-btn" data-id="${ord.id}" data-target="Completed"><i class="fa-solid fa-circle-check me-1"></i> Complete Order</button>`;
+                        } else {
+                            actionButtonText = `<span class="text-success fw-bold small"><i class="fa-solid fa-circle-check"></i> Completed & Handed Over</span>`;
+                        }
+
+                        const row = document.createElement("tr");
+                        row.className = "cursor-pointer";
+                        row.addEventListener("click", (e) => {
+                            if (e.target.closest(".advance-btn")) return;
+                            window.location.href = `admin-order-details.html?id=${ord.id}`;
+                        });
+                        row.innerHTML = `
+                            <td><span class="font-monospace fw-bold">${ord.id}</span></td>
+                            <td class="fw-bold text-white">${ord.user}</td>
+                            <td><div class="text-white-50 text-truncate" style="max-width: 280px;" title="${ord.items}">${ord.items}</div></td>
+                            <td class="fw-bold text-primary">₹${ord.total}</td>
+                            <td><span class="badge ${badgeColor}">${ord.status}</span></td>
+                            <td>${actionButtonText}</td>
+                        `;
+                        queueTableBody.appendChild(row);
+                    });
+
+                    attachAdvanceActions();
+                } else {
+                    queueTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">No active orders found in canteen queues.</td></tr>`;
+                }
+            }
+
+            function attachAdvanceActions() {
+                document.querySelectorAll(".advance-btn").forEach(btn => {
+                    btn.addEventListener("click", () => {
+                        const orderId = btn.getAttribute("data-id");
+                        const targetStatus = btn.getAttribute("data-target");
+
+                        // Update in local admin orders
+                        let ordersList = JSON.parse(localStorage.getItem("munch_orders")) || [];
+                        const index = ordersList.findIndex(o => o.id === orderId);
+                        
+                        if (index !== -1) {
+                            ordersList[index].status = targetStatus;
+                            localStorage.setItem("munch_orders", JSON.stringify(ordersList));
+
+                            // Sync back into the student's local order logs if it belongs to Rahul Verma (simulated student)
+                            if (ordersList[index].user === "Rahul Verma") {
+                                const student = JSON.parse(localStorage.getItem("munch_user")) || {};
+                                if (student.orders) {
+                                    const studentIdx = student.orders.findIndex(o => o.id === orderId);
+                                    if (studentIdx !== -1) {
+                                        student.orders[studentIdx].status = targetStatus;
+                                        localStorage.setItem("munch_user", JSON.stringify(student));
+                                    }
+                                }
+                            }
+
+                            loadQueueTable(orderSearch.value);
+                            showToast(`Order status advanced to "${targetStatus}"!`);
+                        }
+                    });
+                });
+            }
+
+            // Bind Search Input
+            orderSearch.addEventListener("input", (e) => {
+                loadQueueTable(e.target.value);
+            });
+
+            // Initial Load
+            loadQueueTable();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munch Hub Admin - Manage Canteen Foods</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="css/style.css" rel="stylesheet">
+    <!-- Session Router Security Guard -->
+    <script>
+        if (sessionStorage.getItem("munch_admin_session") !== "active") {
+            alert("Unauthorized access! Please login with valid Canteen Staff credentials.");
+            window.location.href = "admin-login.html";
+        }
+    </script>
+    <style>
+        /* Admin Dark Theme Overrides */
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        .admin-sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--glass-border);
+            padding: 2rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: var(--transition-smooth);
+        }
+        .admin-main {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 2.5rem;
+            transition: var(--transition-smooth);
+        }
+        @media (max-width: 991.98px) {
+            .admin-sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--glass-border);
+            }
+            .admin-main {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- Admin Sidebar Navigation -->
+        <aside class="admin-sidebar d-flex flex-column justify-content-between">
+            <div>
+                <!-- Brand Title -->
+                <a href="index.html" class="d-flex align-items-center gap-2 fw-bold text-primary text-decoration-none mb-4" style="font-size: 1.5rem;">
+                    <i class="fa-solid fa-pizza-slice text-secondary"></i> MunchHub <span class="badge bg-danger small" style="font-size: 0.55rem; padding: 0.3em 0.6em;">ADMIN</span>
+                </a>
+                
+                <!-- Profile Indicator -->
+                <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80" alt="Admin Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="overflow-hidden">
+                        <h6 class="mb-0 fw-bold text-truncate" id="sidebarAdminName">Dean O'Food</h6>
+                        <span class="text-muted small text-truncate d-block">Administrator</span>
+                    </div>
+                </div>
+
+                <!-- Menu Links -->
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item">
+                        <a href="admin-dashboard.html" class="sidebar-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="admin-manage-foods.html" class="sidebar-link active"><i class="fa-solid fa-utensils"></i> Manage Foods</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="admin-manage-orders.html" class="sidebar-link"><i class="fa-solid fa-list-ol"></i> Manage Orders</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="admin-profile.html" class="sidebar-link"><i class="fa-solid fa-id-card"></i> Admin Profile</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Logout Bottom -->
+            <div>
+                <hr class="border-secondary">
+                <a href="index.html" class="sidebar-link text-danger fw-semibold"><i class="fa-solid fa-arrow-right-from-bracket"></i> Exit Portal</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-start mb-5 flex-wrap gap-3">
+                <div>
+                    <span class="badge munch-badge badge-glow-primary mb-2"><i class="fa-solid fa-utensils"></i> Stock Control</span>
+                    <h2 class="fw-bold mb-1">Canteen Foods CRUD Center 🍳</h2>
+                    <p class="text-secondary mb-0">Create new dishes, delete unavailable stocks, and update prices in real time.</p>
+                </div>
+                <!-- Trigger modal button -->
+                <button class="munch-btn munch-btn-primary py-2" data-bs-toggle="modal" data-bs-target="#foodCRUDModal" id="addFoodTriggerBtn">
+                    <i class="fa-solid fa-plus-circle me-1"></i> Add Canteen Dish
+                </button>
+            </div>
+
+            <!-- Existing Foods list summaries -->
+            <div class="card glass-card p-4">
+                <h5 class="fw-bold mb-4 text-white"><i class="fa-solid fa-list-check text-primary"></i> Current Active Menu Inventory</h5>
+                
+                <div class="table-responsive">
+                    <table class="table align-middle table-dark bg-transparent">
+                        <thead>
+                            <tr class="small text-secondary">
+                                <th>IMAGE</th>
+                                <th>FOOD DISH</th>
+                                <th>CATEGORY</th>
+                                <th>PRICE</th>
+                                <th>RATING</th>
+                                <th>TRENDING</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body" class="small">
+                            <!-- Injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ADD/EDIT FOOD MODAL -->
+    <div class="modal fade" id="foodCRUDModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-slate-900 text-white border border-secondary" style="border-radius: 20px; background-color: var(--bg-secondary);">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title fw-bold" id="modalTitleText"><i class="fa-solid fa-circle-plus text-primary"></i> Add New Canteen Dish</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="foodCRUDForm">
+                        <input type="hidden" id="editFoodId">
+
+                        <!-- Dish Name -->
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary fw-semibold">DISH NAME</label>
+                            <input type="text" id="foodName" class="form-control bg-transparent border-secondary text-white munch-input" required>
+                        </div>
+
+                        <div class="row mb-3">
+                            <!-- Cost Price -->
+                            <div class="col-6">
+                                <label class="form-label small text-secondary fw-semibold">PRICE (₹)</label>
+                                <input type="number" id="foodPrice" class="form-control bg-transparent border-secondary text-white munch-input" min="10" max="1000" required>
+                            </div>
+                            <!-- Category selection -->
+                            <div class="col-6">
+                                <label class="form-label small text-secondary fw-semibold">CATEGORY</label>
+                                <select id="foodCategory" class="form-select bg-slate-800 border-secondary text-white munch-input" style="height: 48px;">
+                                    <option value="Fast Food">Fast Food</option>
+                                    <option value="Coffee & Shakes">Coffee & Shakes</option>
+                                    <option value="South Indian">South Indian</option>
+                                    <option value="Chinese">Chinese</option>
+                                    <option value="Salads">Salads</option>
+                                    <option value="Juices">Juices</option>
+                                    <option value="Desserts">Desserts</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Image URL -->
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary fw-semibold">IMAGE PATH / UNSPLASH URL</label>
+                            <input type="text" id="foodImage" class="form-control bg-transparent border-secondary text-white munch-input" placeholder="https://images.unsplash.com/..." required>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label class="form-label small text-secondary fw-semibold">DESCRIPTION</label>
+                            <textarea id="foodDesc" class="form-control bg-transparent border-secondary text-white munch-input" rows="3" required></textarea>
+                        </div>
+
+                        <button type="submit" class="munch-btn munch-btn-primary w-100 py-3">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Save Canteen Dish
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap & JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/daa-algorithms.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const admin = JSON.parse(localStorage.getItem("munch_admin"));
+            if (admin) {
+                document.getElementById("sidebarAdminName").innerText = admin.name;
+            }
+
+            const tableBody = document.getElementById("inventory-table-body");
+            const crudForm = document.getElementById("foodCRUDForm");
+            const modalTitle = document.getElementById("modalTitleText");
+
+            const addFoodTriggerBtn = document.getElementById("addFoodTriggerBtn");
+
+            const bootstrapModal = new bootstrap.Modal(document.getElementById('foodCRUDModal'));
+
+            // Load all current foods from localStorage
+            let foodsList = [];
+
+            function loadInventoryTable() {
+                foodsList = JSON.parse(localStorage.getItem("munch_foods")) || [];
+                tableBody.innerHTML = "";
+
+                if (foodsList.length > 0) {
+                    foodsList.forEach(food => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td><img src="${food.image}" class="rounded" style="width: 50px; height: 42px; object-fit: cover;"></td>
+                            <td class="fw-bold">${food.name}</td>
+                            <td><span class="badge bg-secondary">${food.category}</span></td>
+                            <td class="fw-bold text-primary">₹${food.price}</td>
+                            <td class="text-warning"><i class="fa-solid fa-star"></i> ${food.rating}</td>
+                            <td>
+                                <span class="badge ${food.trending ? 'bg-danger' : 'bg-secondary'}">
+                                    ${food.trending ? 'Active' : 'No'}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-info py-1 px-3 edit-food-btn" data-id="${food.id}"><i class="fa-solid fa-pen"></i> Edit</button>
+                                    <button class="btn btn-sm btn-danger py-1 px-3 delete-food-btn" data-id="${food.id}"><i class="fa-solid fa-trash"></i> Delete</button>
+                                </div>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+
+                    attachActions();
+                } else {
+                    tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">No inventory foods registered.</td></tr>`;
+                }
+            }
+
+            function attachActions() {
+                // Edit button trigger
+                document.querySelectorAll(".edit-food-btn").forEach(btn => {
+                    btn.addEventListener("click", () => {
+                        const foodId = parseInt(btn.getAttribute("data-id"));
+                        const food = foodsList.find(f => f.id === foodId);
+                        if (food) {
+                            modalTitle.innerHTML = `<i class="fa-solid fa-pen text-info"></i> Edit Canteen Dish`;
+                            document.getElementById("editFoodId").value = food.id;
+                            document.getElementById("foodName").value = food.name;
+                            document.getElementById("foodPrice").value = food.price;
+                            document.getElementById("foodCategory").value = food.category;
+                            document.getElementById("foodImage").value = food.image;
+                            document.getElementById("foodDesc").value = food.description;
+                            
+                            bootstrapModal.show();
+                        }
+                    });
+                });
+
+                // Delete button trigger
+                document.querySelectorAll(".delete-food-btn").forEach(btn => {
+                    btn.addEventListener("click", () => {
+                        const foodId = parseInt(btn.getAttribute("data-id"));
+                        if (confirm("Are you sure you want to delete this dish from all active canteen menus?")) {
+                            let list = JSON.parse(localStorage.getItem("munch_foods")) || [];
+                            list = list.filter(f => f.id !== foodId);
+                            localStorage.setItem("munch_foods", JSON.stringify(list));
+                            loadInventoryTable();
+                            showToast("Canteen dish deleted successfully!");
+                        }
+                    });
+                });
+            }
+
+            // Reset modal for ADD mode
+            addFoodTriggerBtn.addEventListener("click", () => {
+                modalTitle.innerHTML = `<i class="fa-solid fa-circle-plus text-primary"></i> Add New Canteen Dish`;
+                crudForm.reset();
+                document.getElementById("editFoodId").value = "";
+            });
+
+            // Handle CRUD form submissions (Add or Edit save)
+            crudForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const editId = document.getElementById("editFoodId").value;
+                const name = document.getElementById("foodName").value;
+                const price = parseInt(document.getElementById("foodPrice").value);
+                const category = document.getElementById("foodCategory").value;
+                const image = document.getElementById("foodImage").value;
+                const desc = document.getElementById("foodDesc").value;
+
+                let list = JSON.parse(localStorage.getItem("munch_foods")) || [];
+
+                if (editId) {
+                    // Update existing
+                    const foodIndex = list.findIndex(f => f.id === parseInt(editId));
+                    if (foodIndex !== -1) {
+                        list[foodIndex].name = name;
+                        list[foodIndex].price = price;
+                        list[foodIndex].category = category;
+                        list[foodIndex].image = image;
+                        list[foodIndex].description = desc;
+                        
+                        showToast("Canteen dish updated successfully!");
+                    }
+                } else {
+                    // Add new item
+                    const newFood = {
+                        id: 100 + Math.floor(Math.random() * 900), // Random 3 digit id
+                        name: name,
+                        price: price,
+                        rating: 4.5, // Standard average initial rating
+                        restaurantId: 1, // Default to main Campus Cafeteria
+                        category: category,
+                        image: image,
+                        description: desc,
+                        moods: ["Happy"],
+                        study: ["Assignment Work"],
+                        trending: false,
+                        popularity: 1,
+                        calories: 320
+                    };
+                    list.push(newFood);
+                    showToast("New canteen dish created successfully!");
+                }
+
+                localStorage.setItem("munch_foods", JSON.stringify(list));
+                bootstrapModal.hide();
+                loadInventoryTable();
+            });
+
+            // Initial Load
+            loadInventoryTable();
+        });
+    </script>
+</body>
+</html>

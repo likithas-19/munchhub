@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Munch Hub Admin - Operations Hub</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="css/style.css" rel="stylesheet">
+    <!-- Session Router Security Guard -->
+    <script>
+        if (sessionStorage.getItem("munch_admin_session") !== "active") {
+            alert("Unauthorized access! Please login with valid Canteen Staff credentials.");
+            window.location.href = "admin-login.html";
+        }
+    </script>
+    <style>
+        /* Admin Dark Theme Overrides */
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        .admin-sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--glass-border);
+            padding: 2rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: var(--transition-smooth);
+        }
+        .admin-main {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 2.5rem;
+            transition: var(--transition-smooth);
+        }
+        @media (max-width: 991.98px) {
+            .admin-sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--glass-border);
+            }
+            .admin-main {
+                margin-left: 0;
+            }
+        }
+        /* Interactive statistics cards hover effects */
+        .stats-card {
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--glass-border) !important;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary) !important;
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.2), 0 8px 10px -6px rgba(99, 102, 241, 0.2) !important;
+            background: rgba(30, 41, 59, 0.95) !important;
+        }
+        /* Modal dark glassmorphic styling */
+        .admin-modal-content {
+            background: rgba(15, 23, 42, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 24px !important;
+            color: var(--text-primary);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important;
+        }
+        .admin-modal-header {
+            border-bottom: 1px solid var(--glass-border) !important;
+        }
+        .admin-modal-footer {
+            border-top: 1px solid var(--glass-border) !important;
+        }
+        .admin-modal-content .table th {
+            border-bottom: 2px solid var(--glass-border) !important;
+        }
+        .admin-modal-content .table td {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- Admin Sidebar Navigation -->
+        <aside class="admin-sidebar d-flex flex-column justify-content-between">
+            <div>
+                <!-- Brand Title -->
+                <a href="index.html" class="d-flex align-items-center gap-2 fw-bold text-primary text-decoration-none mb-4" style="font-size: 1.5rem;">
+                    <i class="fa-solid fa-pizza-slice text-secondary"></i> MunchHub <span class="badge bg-danger small" style="font-size: 0.55rem; padding: 0.3em 0.6em;">ADMIN</span>
+                </a>
+                
+                <!-- Profile Indicator -->
+                <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80" alt="Admin Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="overflow-hidden">
+                        <h6 class="mb-0 fw-bold text-truncate" id="sidebarAdminName">Dean O'Food</h6>
+                        <span class="text-muted small text-truncate d-block">Administrator</span>
+                    </div>
+                </div>
+
+                <!-- Menu Links -->
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item">
+                        <a href="admin-dashboard.html" class="sidebar-link active"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="admin-manage-foods.html" class="sidebar-link"><i class="fa-solid fa-utensils"></i> Manage Foods</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="admin-manage-orders.html" class="sidebar-link"><i class="fa-solid fa-list-ol"></i> Manage Orders</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="admin-profile.html" class="sidebar-link"><i class="fa-solid fa-id-card"></i> Admin Profile</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Logout Bottom -->
+            <div>
+                <hr class="border-secondary">
+                <a href="index.html" class="sidebar-link text-danger fw-semibold"><i class="fa-solid fa-arrow-right-from-bracket"></i> Exit Portal</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <div class="mb-5">
+                <span class="badge munch-badge badge-glow-primary mb-2"><i class="fa-solid fa-lock"></i> Operations Room</span>
+                <h2 class="fw-bold mb-1">Canteen Management Dashboard 📊</h2>
+                <p class="text-secondary mb-0">Monitor campus sales, dispatch preparations in the orders queue, and adjust canteen stocks.</p>
+            </div>
+
+            <!-- Dynamic Alert Banner for Canteen Staff -->
+            <div id="adminAlertBanner"></div>
+
+            <!-- Statistics Cards Row -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <div class="card glass-card p-4 h-100 stats-card" id="cardActiveUsers">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="small text-secondary fw-semibold">TOTAL ACTIVE USERS</span>
+                            <div class="fs-3 text-primary"><i class="fa-solid fa-users"></i></div>
+                        </div>
+                        <h2 class="fw-bold mb-1">248</h2>
+                        <span class="text-success small"><i class="fa-solid fa-arrow-trend-up"></i> +12% this week</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card glass-card p-4 h-100 stats-card" id="cardQueueOrders">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="small text-secondary fw-semibold">QUEUE DISPATCH ORDERS</span>
+                            <div class="fs-3 text-secondary"><i class="fa-solid fa-list-ol"></i></div>
+                        </div>
+                        <h2 class="fw-bold mb-1" id="statOrdersCount">42</h2>
+                        <span class="text-warning small"><i class="fa-solid fa-clock"></i> Active prepare pipeline</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card glass-card p-4 h-100 stats-card" id="cardManagedMeals">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="small text-secondary fw-semibold">MANAGED MEALS</span>
+                            <div class="fs-3 text-success"><i class="fa-solid fa-utensils"></i></div>
+                        </div>
+                        <h2 class="fw-bold mb-1" id="statFoodsCount">12</h2>
+                        <span class="text-muted small">Distributed in 5 canteens</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DAA Queue / Recent Orders Table -->
+            <div class="row g-4 mb-5">
+                <div class="col-lg-8">
+                    <div class="card glass-card p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                            <h5 class="fw-bold mb-0"><i class="fa-solid fa-list-ol text-primary"></i> Active Canteen Order Queue</h5>
+                            <a href="admin-manage-orders.html" class="btn btn-sm btn-outline-primary rounded-pill px-3">Dispatch Hub <i class="fa-solid fa-arrow-right"></i></a>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table align-middle table-dark bg-transparent">
+                                <thead>
+                                    <tr class="small text-secondary">
+                                        <th>ORDER ID</th>
+                                        <th>STUDENT</th>
+                                        <th>DISHE SUMMARIES</th>
+                                        <th>BILL AMOUNT</th>
+                                        <th>STATUS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-recent-orders" class="small">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Popular Foods Cards Summary column -->
+                <div class="col-lg-4">
+                    <div class="card glass-card p-4 h-100">
+                        <h5 class="fw-bold mb-4"><i class="fa-solid fa-fire text-danger"></i> High Volume Dishes</h5>
+                        
+                        <div class="d-flex flex-column gap-3" id="admin-popular-foods">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap & JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/daa-algorithms.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const admin = JSON.parse(localStorage.getItem("munch_admin"));
+            if (admin) {
+                document.getElementById("sidebarAdminName").innerText = admin.name;
+            }
+
+            const orders = JSON.parse(localStorage.getItem("munch_orders")) || [];
+            const foods = JSON.parse(localStorage.getItem("munch_foods")) || [];
+
+            // Update statistics numbers
+            document.getElementById("statOrdersCount").innerText = orders.length;
+            document.getElementById("statFoodsCount").innerText = foods.length;
+
+            // Display Warning Banner for Payments Awaiting Canteen Approval
+            const awaitingCount = orders.filter(o => o.status === "Paid (Awaiting Approval)").length;
+            const banner = document.getElementById("adminAlertBanner");
+            if (banner && awaitingCount > 0) {
+                banner.innerHTML = `
+                    <div class="alert glass-card border-danger p-4 mb-4 d-flex align-items-center gap-3 alert-dismissible fade show" role="alert" style="background: rgba(239, 68, 68, 0.08); border-left: 5px solid #dc2626 !important;">
+                        <div class="fs-2 text-danger"><i class="fa-solid fa-triangle-exclamation fa-beat-fade"></i></div>
+                        <div>
+                            <h5 class="fw-bold text-white mb-1">UPI Payments Awaiting Canteen Approval!</h5>
+                            <p class="small text-secondary mb-0">There are currently <strong>${awaitingCount} student order(s)</strong> awaiting payment verification. Go to <a href="admin-manage-orders.html" class="text-primary fw-bold text-decoration-none">Manage Orders</a> to approve transactions and start cooking.</p>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="alert" style="outline:none; box-shadow:none;"></button>
+                    </div>
+                `;
+            }
+
+            // Load FIFO order table (show first 4 items in pipeline)
+            const recentOrdersBody = document.getElementById("admin-recent-orders");
+            if (recentOrdersBody && orders.length > 0) {
+                recentOrdersBody.innerHTML = "";
+                orders.slice(0, 4).forEach(ord => {
+                    let statusColor = "bg-warning text-dark";
+                    if (ord.status === 'Completed') statusColor = "bg-success text-white";
+                    else if (ord.status === 'Preparing') statusColor = "bg-info text-white";
+                    else if (ord.status === 'Ready') statusColor = "bg-primary text-white";
+                    else if (ord.status === 'Dispatched' || ord.status === 'Out for Delivery') statusColor = "bg-warning text-dark";
+                    else if (ord.status === 'Paid (Awaiting Approval)') statusColor = "bg-danger text-white badge-glow-secondary";
+
+                    const row = document.createElement("tr");
+                    row.className = "cursor-pointer";
+                    row.addEventListener("click", () => {
+                        window.location.href = `admin-order-details.html?id=${ord.id}`;
+                    });
+                    row.innerHTML = `
+                        <td><span class="font-monospace fw-bold">${ord.id}</span></td>
+                        <td>${ord.user}</td>
+                        <td><div class="text-truncate" style="max-width: 220px;">${ord.items}</div></td>
+                        <td class="fw-bold text-primary">₹${ord.total}</td>
+                        <td><span class="badge ${statusColor}">${ord.status}</span></td>
+                    `;
+                    recentOrdersBody.appendChild(row);
+                });
+            } else {
+                recentOrdersBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No orders in queue.</td></tr>`;
+            }
+
+            // Load high volume foods (sort mock foods by popularity descending)
+            const popContainer = document.getElementById("admin-popular-foods");
+            if (popContainer && foods.length > 0) {
+                popContainer.innerHTML = "";
+                const sortedPop = heapSort(foods, 'popularity', false); // Descending Heap Sort!
+                
+                sortedPop.slice(0, 3).forEach(food => {
+                    const row = document.createElement("div");
+                    row.className = "d-flex align-items-center gap-3 p-2 rounded bg-slate-800 border border-secondary shadow-sm hover-scale cursor-pointer";
+                    row.setAttribute("data-food-id", food.id);
+                    row.addEventListener("click", () => {
+                        window.location.href = "admin-manage-foods.html";
+                    });
+                    row.innerHTML = `
+                        <img src="${food.image}" class="rounded" style="width: 45px; height: 45px; object-fit: cover;">
+                        <div class="overflow-hidden">
+                            <h6 class="mb-0 fw-bold small text-white text-truncate">${food.name}</h6>
+                            <span class="text-muted small">${food.category}</span>
+                        </div>
+                        <div class="ms-auto text-end">
+                            <span class="badge bg-danger rounded-pill small">${food.popularity} orders</span>
+                        </div>
+                    `;
+                    popContainer.appendChild(row);
+                });
+            }
+
+            // --- Click Handlers & Data Injection for Statistics Cards Details ---
+            const activeUsersModal = new bootstrap.Modal(document.getElementById("activeUsersModal"));
+            const queueOrdersModal = new bootstrap.Modal(document.getElementById("queueOrdersModal"));
+            const managedMealsModal = new bootstrap.Modal(document.getElementById("managedMealsModal"));
+
+            document.getElementById("cardActiveUsers").addEventListener("click", () => {
+                const usersBody = document.getElementById("modal-users-body");
+                usersBody.innerHTML = "";
+                
+                const activeUsersList = [
+                    { name: "Rahul Verma", email: "rahul.verma@nit.edu", college: "NIT Campus", address: "Room 304, Hostel Block B", status: "Active Now" },
+                    { name: "Priya Sharma", email: "priya.s@nit.edu", college: "NIT Campus", address: "Room 102, Hostel Block A", status: "Active Now" },
+                    { name: "Amit Patel", email: "amit.patel@nit.edu", college: "NIT Campus", address: "Room 412, Hostel Block B", status: "Active (Idle)" },
+                    { name: "Sneha Reddy", email: "sneha.r@nit.edu", college: "NIT Campus", address: "Room 205, Hostel Block A", status: "Active Now" },
+                    { name: "Vikram Singh", email: "vikram.s@nit.edu", college: "NIT Campus", address: "Room 318, Hostel Block B", status: "Offline" },
+                    { name: "Dean O'Food", email: "dean.food@munchhub.edu", college: "Canteen Operations", address: "Central Kitchen Office", status: "Active Now" }
+                ];
+                
+                activeUsersList.forEach(u => {
+                    const tr = document.createElement("tr");
+                    const statusBadge = u.status === "Active Now" ? 
+                        `<span class="badge bg-success">Active Now</span>` : 
+                        (u.status === "Active (Idle)" ? `<span class="badge bg-warning text-dark">Active (Idle)</span>` : `<span class="badge bg-secondary">Offline</span>`);
+                    
+                    tr.innerHTML = `
+                        <td class="fw-bold text-white">${u.name}</td>
+                        <td class="text-secondary">${u.email}</td>
+                        <td class="text-secondary">${u.college}</td>
+                        <td class="text-secondary">${u.address}</td>
+                        <td>${statusBadge}</td>
+                    `;
+                    usersBody.appendChild(tr);
+                });
+                
+                activeUsersModal.show();
+            });
+
+            document.getElementById("cardQueueOrders").addEventListener("click", () => {
+                const ordersBody = document.getElementById("modal-orders-body");
+                ordersBody.innerHTML = "";
+                
+                const activeOrders = JSON.parse(localStorage.getItem("munch_orders")) || [];
+                
+                if (activeOrders.length > 0) {
+                    activeOrders.forEach(ord => {
+                        let badgeColor = "bg-warning text-dark";
+                        if (ord.status === "Completed") badgeColor = "bg-success text-white";
+                        else if (ord.status === "Preparing") badgeColor = "bg-info text-white";
+                        else if (ord.status === "Ready") badgeColor = "bg-primary text-white";
+                        else if (ord.status === "Dispatched" || ord.status === "Out for Delivery") badgeColor = "bg-warning text-dark";
+                        else if (ord.status === "Paid (Awaiting Approval)") badgeColor = "bg-danger text-white badge-glow-secondary";
+
+                        const tr = document.createElement("tr");
+                        tr.className = "cursor-pointer hover-scale";
+                        tr.addEventListener("click", () => {
+                            queueOrdersModal.hide();
+                            setTimeout(() => {
+                                window.location.href = `admin-order-details.html?id=${ord.id}`;
+                            }, 300);
+                        });
+                        tr.innerHTML = `
+                            <td><span class="font-monospace fw-bold text-white">${ord.id}</span></td>
+                            <td class="fw-bold text-white">${ord.user}</td>
+                            <td><div class="text-truncate text-white-50" style="max-width: 250px;" title="${ord.items}">${ord.items}</div></td>
+                            <td class="fw-bold text-primary">₹${ord.total}</td>
+                            <td><span class="badge ${badgeColor}">${ord.status}</span></td>
+                        `;
+                        ordersBody.appendChild(tr);
+                    });
+                } else {
+                    ordersBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No active orders in queue.</td></tr>`;
+                }
+                
+                queueOrdersModal.show();
+            });
+
+            document.getElementById("cardManagedMeals").addEventListener("click", () => {
+                const mealsBody = document.getElementById("modal-meals-body");
+                mealsBody.innerHTML = "";
+                
+                const allFoods = JSON.parse(localStorage.getItem("munch_foods")) || [];
+                
+                if (allFoods.length > 0) {
+                    allFoods.forEach(food => {
+                        const isVeg = food.veg === true || food.veg === "true";
+                        const vegBadge = isVeg ? 
+                            `<span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-25"><i class="fa-solid fa-leaf"></i> Veg</span>` : 
+                            `<span class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-25"><i class="fa-solid fa-drumstick-bite"></i> Non-Veg</span>`;
+                        
+                        const tr = document.createElement("tr");
+                        tr.className = "cursor-pointer hover-scale";
+                        tr.addEventListener("click", () => {
+                            managedMealsModal.hide();
+                            setTimeout(() => {
+                                window.location.href = "admin-manage-foods.html";
+                            }, 300);
+                        });
+                        tr.innerHTML = `
+                            <td><img src="${food.image}" class="rounded shadow-sm" style="width: 35px; height: 35px; object-fit: cover;"></td>
+                            <td class="fw-bold text-white">${food.name}</td>
+                            <td class="text-secondary">${food.category}</td>
+                            <td class="fw-bold text-primary">₹${food.price}</td>
+                            <td>${vegBadge}</td>
+                            <td><span class="badge bg-secondary">${food.popularity || 0} orders</span></td>
+                        `;
+                        mealsBody.appendChild(tr);
+                    });
+                } else {
+                    mealsBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">No foods found.</td></tr>`;
+                }
+                
+                managedMealsModal.show();
+            });
+
+        });
+    </script>
+
+    <!-- Details Modals Markup -->
+    <!-- Modal 1: Active Users -->
+    <div class="modal fade" id="activeUsersModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content admin-modal-content">
+                <div class="modal-header admin-modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-primary"><i class="fa-solid fa-users me-2"></i> Active Campus Users Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <p class="text-secondary small mb-4">A live preview of student accounts currently registered or active on the MunchHub student portal.</p>
+                    <div class="table-responsive">
+                        <table class="table align-middle table-dark bg-transparent mb-0">
+                            <thead>
+                                <tr class="small text-secondary">
+                                    <th>STUDENT</th>
+                                    <th>EMAIL</th>
+                                    <th>COLLEGE</th>
+                                    <th>DELIVERY HOSTEL</th>
+                                    <th>STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-users-body" class="small">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer admin-modal-footer">
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Close Details</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Queue Dispatch Orders -->
+    <div class="modal fade" id="queueOrdersModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content admin-modal-content">
+                <div class="modal-header admin-modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-secondary"><i class="fa-solid fa-list-ol me-2"></i> Active Kitchen Orders Queue</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <p class="text-secondary small mb-4">Detailed view of all pending, preparing, ready, and dispatched orders currently active in canteens.</p>
+                    <div class="table-responsive">
+                        <table class="table align-middle table-dark bg-transparent mb-0">
+                            <thead>
+                                <tr class="small text-secondary">
+                                    <th>ORDER ID</th>
+                                    <th>STUDENT</th>
+                                    <th>ITEMS SUMMARY</th>
+                                    <th>PRICE</th>
+                                    <th>PIPELINE PHASE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-orders-body" class="small">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer admin-modal-footer d-flex justify-content-between">
+                    <a href="admin-manage-orders.html" class="munch-btn munch-btn-primary text-decoration-none py-2 px-4 rounded-pill small"><i class="fa-solid fa-gears me-1"></i> Open Dispatch Pipeline</a>
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Close Details</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Managed Meals -->
+    <div class="modal fade" id="managedMealsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content admin-modal-content">
+                <div class="modal-header admin-modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-success"><i class="fa-solid fa-utensils me-2"></i> Managed Canteen Foods</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <p class="text-secondary small mb-4">List of active foods, dishes, and beverage menu selections managed on campus canteens.</p>
+                    <div class="table-responsive">
+                        <table class="table align-middle table-dark bg-transparent mb-0">
+                            <thead>
+                                <tr class="small text-secondary">
+                                    <th>IMAGE</th>
+                                    <th>DISH NAME</th>
+                                    <th>CATEGORY</th>
+                                    <th>PRICE</th>
+                                    <th>DIET TYPE</th>
+                                    <th>POPULARITY</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-meals-body" class="small">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer admin-modal-footer d-flex justify-content-between">
+                    <a href="admin-manage-foods.html" class="munch-btn munch-btn-primary text-decoration-none py-2 px-4 rounded-pill small"><i class="fa-solid fa-utensils me-1"></i> Open Menu Manager</a>
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Close Details</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
