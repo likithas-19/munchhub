@@ -159,7 +159,7 @@
                         <div class="row mb-4">
                             <div class="col-sm-6">
                                 <span class="text-muted small d-block">BILLED TO STUDENT</span>
-                                <strong id="invoiceStudentName" class="text-dark">Rahul Verma</strong><br>
+                                <strong id="invoiceStudentName" class="text-dark">Munch User</strong><br>
                                 <span class="small text-muted" id="invoiceStudentCollege">NIT Campus</span><br>
                                 <span class="small text-muted" id="invoiceStudentAddress">Room 304, Hostel Block B</span>
                             </div>
@@ -345,7 +345,7 @@
                 
                 // Set text fields
                 document.getElementById("invoiceRefNo").innerText = latestOrder.id;
-                document.getElementById("invoiceStudentName").innerText = user.name || "Rahul Verma";
+                document.getElementById("invoiceStudentName").innerText = user.name || "Munch User";
                 document.getElementById("invoiceStudentCollege").innerText = user.college || "National Institute of Technology";
                 document.getElementById("invoiceStudentAddress").innerText = user.address || "Room 304, Hostel Block B, NIT Campus";
                 document.getElementById("invoiceDate").innerText = latestOrder.date || new Date().toISOString().slice(0,10);

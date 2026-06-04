@@ -80,7 +80,7 @@
                         <input type="checkbox" class="form-check-input" id="rememberMe">
                         <label class="form-check-label small text-secondary" for="rememberMe">Remember me</label>
                     </div>
-                    <a href="#" class="small text-primary text-decoration-none">Forgot password?</a>
+                    <a href="#" onclick="showToast('Password reset link sent to your email!', 'success'); event.preventDefault();" class="small text-primary text-decoration-none">Forgot password?</a>
                 </div>
 
                 <!-- Submit Button -->
@@ -133,10 +133,15 @@
             if(emailInput.includes("@")) {
                 let user = JSON.parse(localStorage.getItem("munch_user")) || {};
                 
-                // If it's a new or default user, we save their input email
+                // If it's a new or default user, we save their input email and extract details
                 user.email = emailInput;
-                if (!user.name) user.name = "Rahul Verma";
-                if (!user.college) user.college = "National Institute of Technology";
+                if (!user.name) {
+                    const username = emailInput.split('@')[0];
+                    const nameParts = username.split(/[._-]/).map(part => part.charAt(0).toUpperCase() + part.slice(1));
+                    user.name = nameParts.join(' ') || "Munch User";
+                }
+                if (!user.college) user.college = "Bangalore University";
+                if (!user.phone) user.phone = "+91 99000 98765";
                 
                 localStorage.setItem("munch_user", JSON.stringify(user));
                 

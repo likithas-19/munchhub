@@ -17,7 +17,32 @@
         }
     </script>
     <style>
+        /* Admin Theme Tokens - Responsive to Light & Dark Modes */
         :root {
+            /* Light mode values */
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(99, 102, 241, 0.15);
+        }
+        
+        /* Dark mode values by default or when data-theme is dark */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #0f172a;
+                --bg-secondary: #1e293b;
+                --bg-tertiary: #334155;
+                --text-primary: #f8fafc;
+                --text-secondary: #94a3b8;
+                --glass-bg: rgba(30, 41, 59, 0.7);
+                --glass-border: rgba(255, 255, 255, 0.08);
+            }
+        }
+        
+        [data-theme="dark"] {
             --bg-primary: #0f172a;
             --bg-secondary: #1e293b;
             --bg-tertiary: #334155;
@@ -26,10 +51,49 @@
             --glass-bg: rgba(30, 41, 59, 0.7);
             --glass-border: rgba(255, 255, 255, 0.08);
         }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(99, 102, 241, 0.15);
+        }
+
         body {
             background-color: var(--bg-primary);
             color: var(--text-primary);
         }
+        
+        /* Heading & Element Visibility Safeguards */
+        h1, h2, h3, h4, h5, h6, .card-title, th {
+            color: var(--text-primary) !important;
+        }
+
+        /* Force light text to adapt to light theme, but exclude elements that need white text on dark backgrounds like badges, buttons, and alert banners */
+        [data-theme="light"] .text-white:not(.badge):not(.btn):not(.alert):not([class*="bg-"]):not([class*="btn-"]):not(.munch-btn) {
+            color: var(--text-primary) !important;
+        }
+        [data-theme="light"] .text-white-50:not(.badge):not(.btn):not(.alert):not([class*="bg-"]):not([class*="btn-"]):not(.munch-btn) {
+            color: var(--text-primary) !important;
+            opacity: 0.75 !important;
+        }
+        
+        /* Dynamic table cell and header visibility overrides */
+        .table th, .table td {
+            color: var(--text-primary) !important;
+        }
+        
+        /* Override Bootstrap's hardcoded dark table theme in light mode */
+        [data-theme="light"] .table-dark {
+            color: var(--text-primary) !important;
+            --bs-table-color: var(--text-primary) !important;
+            --bs-table-bg: transparent !important;
+            --bs-table-border-color: var(--glass-border) !important;
+        }
+
         .admin-sidebar {
             width: var(--sidebar-width);
             background: var(--bg-secondary);
@@ -134,7 +198,7 @@
                 </a>
                 
                 <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
-                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80" alt="Admin Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="admin-avatar-circle rounded-circle shadow d-flex align-items-center justify-content-center bg-danger text-white fw-bold" style="width: 45px; height: 45px; min-width: 45px; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">A</div>
                     <div class="overflow-hidden">
                         <h6 class="mb-0 fw-bold text-truncate" id="sidebarAdminName">Dean O'Food</h6>
                         <span class="text-muted small text-truncate d-block">Administrator</span>
@@ -244,6 +308,10 @@
                                 <span>Order Date:</span>
                                 <strong class="text-white" id="metaOrderDate">-</strong>
                             </div>
+                            <div class="d-flex justify-content-between border-bottom border-secondary pb-2">
+                                <span>Delivery Location:</span>
+                                <strong class="text-warning text-end" id="metaDeliveryLocation" style="max-width: 180px; word-break: break-word;">-</strong>
+                            </div>
                             <div class="d-flex justify-content-between">
                                 <span>Grand Total:</span>
                                 <strong class="text-primary fw-bold" id="metaGrandTotal">₹0</strong>
@@ -316,6 +384,7 @@
                 document.getElementById("metaOrderId").innerText = matched.id;
                 document.getElementById("metaStudentName").innerText = matched.user;
                 document.getElementById("metaOrderDate").innerText = matched.date || new Date().toISOString().slice(0, 10);
+                document.getElementById("metaDeliveryLocation").innerText = matched.deliveryLocation || "NIT Campus Hostel";
                 document.getElementById("metaGrandTotal").innerText = `₹${matched.total}`;
 
                 // 3. Setup Delivery Route Tracking Link
@@ -393,8 +462,8 @@
                             localStorage.setItem("munch_orders", JSON.stringify(ordersList));
 
                             // Sync back into student order log
-                            if (ordersList[index].user === "Rahul Verma") {
-                                const student = JSON.parse(localStorage.getItem("munch_user")) || {};
+                            const student = JSON.parse(localStorage.getItem("munch_user")) || {};
+                            if (student.name && ordersList[index].user === student.name) {
                                 if (student.orders) {
                                     const studentIdx = student.orders.findIndex(o => o.id === orderId);
                                     if (studentIdx !== -1) {

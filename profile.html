@@ -53,9 +53,9 @@
                 
                 <!-- Profile Indicator -->
                 <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
-                    <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80" alt="Student Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="profile-avatar-circle rounded-circle shadow d-flex align-items-center justify-content-center bg-primary text-white fw-bold" style="width: 45px; height: 45px; min-width: 45px; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">U</div>
                     <div class="overflow-hidden">
-                        <h6 class="mb-0 fw-bold text-truncate profile-welcome-name">Rahul Verma</h6>
+                        <h6 class="mb-0 fw-bold text-truncate profile-welcome-name">Munch User</h6>
                         <span class="text-muted small text-truncate d-block profile-welcome-college">NIT Campus</span>
                     </div>
                 </div>
@@ -64,12 +64,6 @@
                 <ul class="sidebar-menu">
                     <li class="sidebar-item">
                         <a href="dashboard.html" class="sidebar-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="mood-meals.html" class="sidebar-link"><i class="fa-solid fa-face-smile"></i> Mood Meals</a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="study-meals.html" class="sidebar-link"><i class="fa-solid fa-book"></i> Study Meals</a>
                     </li>
                     <li class="sidebar-item">
                         <a href="budget-meals.html" class="sidebar-link"><i class="fa-solid fa-wallet"></i> Budget Meals</a>
@@ -107,14 +101,27 @@
                 <div class="col-lg-5">
                     <div class="card glass-card p-4 text-center mb-4">
                         <div class="position-relative d-inline-block mx-auto mb-3">
-                            <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80" alt="Rahul Profile Image" class="rounded-circle shadow border border-primary border-3" style="width: 120px; height: 120px; object-fit: cover;">
+                            <div class="profile-avatar-circle-large rounded-circle shadow border border-primary border-3 d-flex align-items-center justify-content-center bg-primary text-white fw-bold mx-auto mb-3" style="width: 120px; height: 120px; font-size: 3rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">U</div>
                             <span class="position-absolute bottom-0 end-0 bg-primary text-white p-2 rounded-circle border border-white cursor-pointer hover-scale" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
                                 <i class="fa-solid fa-camera"></i>
                             </span>
                         </div>
-                        <h4 class="fw-bold mb-1 profile-welcome-name">Rahul Verma</h4>
-                        <p class="text-muted small mb-3 profile-welcome-email">rahul.verma@college.edu</p>
+                        <h4 class="fw-bold mb-1 profile-welcome-name">Munch User</h4>
+                        <p class="text-muted small mb-3 profile-welcome-email">user@munchhub.in</p>
                         <span class="badge munch-badge badge-glow-primary mb-0"><i class="fa-solid fa-award"></i> Active Canteen Saver</span>
+                    </div>
+
+                    <!-- Smart Menu Showcase Banner Callout -->
+                    <div class="card glass-card p-4 border-0 mb-4 text-white shadow-sm hover-scale position-relative overflow-hidden" id="profileSmartMenuBanner" style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);">
+                        <div class="position-absolute" style="top: -20px; right: -20px; font-size: 8rem; opacity: 0.12; color: #fff; pointer-events: none;">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <div class="position-relative z-index-2">
+                            <span class="badge munch-badge badge-glow-secondary mb-2"><i class="fa-solid fa-sparkles"></i> AI Dining Intelligence</span>
+                            <h5 class="fw-bold text-white mb-2">Maximize Your Dining Potential!</h5>
+                            <p class="small text-white-50 mb-4">Discover cognitive study booster meals, mood-tailored recommendations, and optimized budget combinations with our DAA Smart Menu solver!</p>
+                            <a href="menu.html" class="munch-btn munch-btn-secondary text-white text-decoration-none py-2.5 px-4 w-100 text-center font-weight-bold d-block rounded-3 shadow" id="profileSmartMenuActionBtn"><i class="fa-solid fa-utensils me-2"></i> Explore Smart Menu</a>
+                        </div>
                     </div>
 
                     <!-- Contact Details Form -->
@@ -134,17 +141,26 @@
                                 <input type="tel" id="profPhone" class="form-control munch-input" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label small text-secondary fw-semibold">COLLEGE / HOSTEL DETAILS</label>
-                                <input type="text" id="profCollege" class="form-control munch-input" required>
+                                <label class="form-label small text-secondary fw-semibold">COLLEGE / HOSTEL DETAILS (or 'Off-Campus' / 'Home')</label>
+                                <input type="text" id="profCollege" class="form-control munch-input" placeholder="e.g. NIT Campus OR Off-Campus" required>
                             </div>
                             <div class="mb-4">
-                                <label class="form-label small text-secondary fw-semibold">DEFAULT DELIVERY HOSTEL ADDRESS</label>
-                                <textarea id="profAddress" class="form-control munch-input" rows="2" required></textarea>
+                                <label class="form-label small text-secondary fw-semibold">DEFAULT DELIVERY ADDRESS (Room, Block, or Home/Off-Campus location)</label>
+                                <textarea id="profAddress" class="form-control munch-input" rows="2" placeholder="e.g. Room 304, Hostel Block B, NIT Campus OR 123 Main St, Gandhi Bazaar, Bengaluru" required></textarea>
                             </div>
                             <button type="submit" class="munch-btn munch-btn-primary w-100 py-3">
                                 <i class="fa-solid fa-floppy-disk"></i> Save Changes
                             </button>
                         </form>
+                    </div>
+
+                    <!-- Danger Zone Card -->
+                    <div class="card glass-card border-danger border-opacity-25 p-4 mt-4">
+                        <h5 class="fw-bold mb-3 text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</h5>
+                        <p class="small text-secondary mb-4">Deleting your account will permanently wipe your profile details, order history, and saved items from MunchHub. This action is irreversible.</p>
+                        <button type="button" class="munch-btn w-100 py-3 text-danger border border-danger border-opacity-50 bg-danger bg-opacity-10 hover-scale" id="deleteAccountBtn" style="border-radius: 12px; transition: var(--transition-smooth);">
+                            <i class="fa-solid fa-trash-can"></i> Delete Account
+                        </button>
                     </div>
                 </div>
 
@@ -313,7 +329,7 @@
                             
                             // Set basic invoice headers
                             document.getElementById("invoiceRefNo").innerText = selectedOrder.id;
-                            document.getElementById("invoiceStudentName").innerText = user.name || "Rahul Verma";
+                            document.getElementById("invoiceStudentName").innerText = user.name || "Munch User";
                             document.getElementById("invoiceStudentCollege").innerText = user.college || "NIT Campus";
                             document.getElementById("invoiceStudentAddress").innerText = user.address || "NIT Campus Hostel";
                             document.getElementById("invoiceDate").innerText = selectedOrder.date || new Date().toISOString().slice(0,10);
@@ -372,6 +388,24 @@
                 showToast("Profile details updated successfully!");
             });
 
+            // Delete Account Handler
+            const deleteBtn = document.getElementById("deleteAccountBtn");
+            if (deleteBtn) {
+                deleteBtn.addEventListener("click", () => {
+                    const confirmWipe = confirm("Are you absolutely sure you want to delete your account? This will wipe your profile details, order logs, and saved items, and log you out immediately.");
+                    if (confirmWipe) {
+                        localStorage.removeItem("munch_user");
+                        localStorage.removeItem("munch_cart");
+                        localStorage.removeItem("munch_latest_order");
+                        
+                        showToast("Account deleted successfully! Redirecting...", "error");
+                        setTimeout(() => {
+                            window.location.href = "register.html";
+                        }, 1500);
+                    }
+                });
+            }
+
             // 5. Global Print PDF Event Handler
             document.getElementById("triggerPrintBtn").addEventListener("click", () => {
                 window.print();
@@ -406,7 +440,7 @@
                         <div class="row mb-4">
                             <div class="col-sm-6">
                                 <span class="text-muted small d-block">BILLED TO STUDENT</span>
-                                <strong id="invoiceStudentName" class="text-dark">Rahul Verma</strong><br>
+                                <strong id="invoiceStudentName" class="text-dark">Munch User</strong><br>
                                 <span class="small text-muted" id="invoiceStudentCollege">NIT Campus</span><br>
                                 <span class="small text-muted" id="invoiceStudentAddress">Room 304, Hostel Block B</span>
                             </div>

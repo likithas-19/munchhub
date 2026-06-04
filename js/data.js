@@ -68,7 +68,7 @@ const MunchData = {
             rating: 4.8,
             restaurantId: 1,
             category: "South Indian",
-            image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=500&q=80",
+            image: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=500&q=80",
             description: "Legendary Vidyarthi Bhavan dosa: thick, crispy, golden-brown fermented rice crepe soaked in pure ghee, stuffed with potato mash. Served with coconut chutney.",
             moods: ["Happy", "Tired"],
             study: ["Assignment Work"],
@@ -84,7 +84,7 @@ const MunchData = {
             rating: 4.7,
             restaurantId: 1,
             category: "South Indian",
-            image: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=500&q=80",
+            image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=500&q=80",
             description: "One feather-light steamed rice idli and one super crispy urad dal vada served with hot sambar and traditional Vidyarthi Bhavan thick coconut chutney.",
             moods: ["Tired"],
             study: ["Exam Preparation"],
@@ -116,7 +116,7 @@ const MunchData = {
             rating: 4.7,
             restaurantId: 1,
             category: "South Indian",
-            image: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=500&q=80",
+            image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=500&q=80",
             description: "Genuine semolina idli mixed with curd, coriander, mustard seeds, cashew nuts, and ghee, invented by Mavalli Tiffin Room. Served with potato sagu.",
             moods: ["Tired", "Stressed"],
             study: ["Coding"],
@@ -132,7 +132,7 @@ const MunchData = {
             rating: 4.9,
             restaurantId: 1,
             category: "South Indian",
-            image: "https://images.unsplash.com/photo-1658140410419-f53835698b76?auto=format&fit=crop&w=500&q=80",
+            image: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=500&q=80",
             description: "Bangalore CTR style Benne Masala Dosa: outer shell incredibly crispy, loaded with melted butter, with a soft inner layer and spicy potato mash.",
             moods: ["Happy", "Excited"],
             study: ["Late Night Study"],
@@ -166,7 +166,7 @@ const MunchData = {
             rating: 4.3,
             restaurantId: 3,
             category: "Fast Food",
-            image: "https://images.unsplash.com/photo-1598103442097-8b74394b98c6?auto=format&fit=crop&w=500&q=80",
+            image: "https://images.unsplash.com/photo-1598908314732-07113901949e?auto=format&fit=crop&w=500&q=80",
             description: "Half chicken marinated overnight in Empire's secret spice mix, grilled over lava stones, served with dynamic garlic mayonnaise dip.",
             moods: ["Excited", "Happy"],
             study: ["Late Night Study"],
@@ -380,7 +380,7 @@ const MunchData = {
             rating: 4.3,
             restaurantId: 5,
             category: "Salads",
-            image: "https://images.unsplash.com/photo-1610970881699-44a55b4cfd87?auto=format&fit=crop&w=500&q=80",
+            image: "https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=500&q=80",
             description: "Cold pressed extract of celery, fresh mint, juicy green apple, cucumber, and ginger. Designed to cleanse your system.",
             moods: ["Stressed", "Tired"],
             study: ["Exam Preparation"],
@@ -505,13 +505,20 @@ const MunchData = {
     }
 };
 
+function initializeMockData() {
+    // No default student user or mock orders are created to keep the system clean of dummy accounts!
+    localStorage.removeItem("munch_user");
+    localStorage.setItem("munch_orders", JSON.stringify([]));
+}
+
 // Initialize default store if not exists
 function initStore() {
-    if (!localStorage.getItem("munch_initialized_v4")) {
+    if (!localStorage.getItem("munch_initialized_v11")) {
         // Clear all old keys to ensure a completely fresh start!
         localStorage.removeItem("munch_user");
         localStorage.removeItem("munch_latest_order");
         localStorage.removeItem("munch_cart");
+        localStorage.removeItem("munch_orders");
         
         localStorage.setItem("munch_restaurants", JSON.stringify(MunchData.restaurants));
         localStorage.setItem("munch_foods", JSON.stringify(MunchData.foods));
@@ -522,13 +529,20 @@ function initStore() {
             phone: "+91 90000 12345",
             role: "Administrator",
             foodsManaged: 26,
-            ordersHandled: 0
+            ordersHandled: 4
         };
         localStorage.setItem("munch_admin", JSON.stringify(defaultAdmin));
         
-        // Empty active orders queue for a completely fresh start
-        localStorage.setItem("munch_orders", JSON.stringify([]));
+        // Populate mock data
+        initializeMockData();
         
+        localStorage.setItem("munch_initialized_v11", "true");
+        localStorage.setItem("munch_initialized_v10", "true");
+        localStorage.setItem("munch_initialized_v9", "true");
+        localStorage.setItem("munch_initialized_v8", "true");
+        localStorage.setItem("munch_initialized_v7", "true");
+        localStorage.setItem("munch_initialized_v6", "true");
+        localStorage.setItem("munch_initialized_v5", "true");
         localStorage.setItem("munch_initialized_v4", "true");
         localStorage.setItem("munch_initialized_v3", "true");
         localStorage.setItem("munch_initialized", "true");
@@ -541,18 +555,20 @@ initStore();
 (function() {
     try {
         const currentFoods = JSON.parse(localStorage.getItem("munch_foods"));
-        // Overwrite if foods database is missing or old, or if fresh start v4 is not activated yet
-        if (!currentFoods || currentFoods.length < 18 || !localStorage.getItem("munch_initialized_v4")) {
+        // Overwrite if foods database is missing or old, or if fresh start v11 is not activated yet
+        if (!currentFoods || currentFoods.length < 18 || !localStorage.getItem("munch_initialized_v11")) {
             localStorage.setItem("munch_restaurants", JSON.stringify(MunchData.restaurants));
             localStorage.setItem("munch_foods", JSON.stringify(MunchData.foods));
             
-            // Clean slate overrides
-            localStorage.removeItem("munch_user");
-            localStorage.removeItem("munch_latest_order");
-            localStorage.removeItem("munch_cart");
-            localStorage.setItem("munch_orders", JSON.stringify([]));
+            // Clean slate overrides with mock data
+            initializeMockData();
             
-            localStorage.setItem("munch_initialized_v4", "true");
+            localStorage.setItem("munch_initialized_v11", "true");
+        }
+        
+        // Safeguard to initialize order queue if missing
+        if (!localStorage.getItem("munch_orders")) {
+            localStorage.setItem("munch_orders", JSON.stringify([]));
         }
     } catch(e) {
         console.error("Local storage database overhaul failed:", e);

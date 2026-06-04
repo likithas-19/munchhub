@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MunchHub - Help Centre</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        .faq-accordion .accordion-item {
+            background: var(--bg-card) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(10px);
+            transition: var(--transition-smooth);
+        }
+        .faq-accordion .accordion-button {
+            background: transparent !important;
+            color: var(--text-primary) !important;
+            font-weight: 600;
+            padding: 1.25rem 1.5rem;
+            box-shadow: none;
+        }
+        .faq-accordion .accordion-button::after {
+            filter: var(--theme-icon-filter);
+        }
+        .faq-accordion .accordion-button:not(.collapsed) {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--primary) !important;
+        }
+        .faq-accordion .accordion-body {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .chat-box {
+            height: 350px;
+            overflow-y: auto;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.15);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .chat-msg {
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        .chat-msg.agent {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .chat-msg.user {
+            background: var(--gradient-primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="dashboard-sidebar d-flex flex-column justify-content-between">
+            <div>
+                <!-- Brand Title -->
+                <a href="index.html" class="d-flex align-items-center gap-2 fw-bold text-primary text-decoration-none mb-4" style="font-size: 1.5rem;">
+                    <i class="fa-solid fa-pizza-slice text-secondary"></i> MunchHub
+                </a>
+                
+                <!-- Profile Indicator -->
+                <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
+                    <div class="profile-avatar-circle rounded-circle shadow d-flex align-items-center justify-content-center bg-primary text-white fw-bold" style="width: 45px; height: 45px; min-width: 45px; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">U</div>
+                    <div class="overflow-hidden">
+                        <h6 class="mb-0 fw-bold text-truncate profile-welcome-name">Munch User</h6>
+                        <span class="text-muted small text-truncate d-block profile-welcome-college">MunchHub Member</span>
+                    </div>
+                </div>
+
+                <!-- Menu Links -->
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item">
+                        <a href="dashboard.html" class="sidebar-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="budget-meals.html" class="sidebar-link"><i class="fa-solid fa-wallet"></i> Budget Meals</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="trending.html" class="sidebar-link"><i class="fa-solid fa-fire text-danger"></i> Trending Foods</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="group-order.html" class="sidebar-link"><i class="fa-solid fa-people-group"></i> Group Orders</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="profile.html" class="sidebar-link"><i class="fa-solid fa-user"></i> Profile</a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="cart.html" class="sidebar-link position-relative">
+                            <i class="fa-solid fa-cart-shopping"></i> My Cart
+                            <span class="position-absolute end-0 me-3 translate-middle-y badge rounded-pill bg-danger cart-count-badge font-weight-bold" style="font-size: 0.65rem; top: 50%;">0</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Logout Bottom -->
+            <div>
+                <hr class="border-secondary">
+                <a href="index.html" class="sidebar-link text-danger fw-semibold" onclick="localStorage.removeItem('munch_cart')"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-start mb-5 flex-wrap gap-3">
+                <div>
+                    <span class="badge munch-badge badge-glow-primary mb-2"><i class="fa-solid fa-headset"></i> Support Hub</span>
+                    <h2 class="fw-bold mb-1">MunchHub Help Centre</h2>
+                    <p class="text-secondary mb-0">Find quick answers, raise support tickets, or chat with our automated assistant.</p>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-5">
+                <!-- FAQs Column -->
+                <div class="col-lg-7">
+                    <h4 class="fw-bold mb-4"><i class="fa-solid fa-circle-question text-primary"></i> Frequently Asked Questions</h4>
+                    
+                    <div class="accordion faq-accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    How does the Smart Budget Optimizer work?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    The Budget Optimizer uses a customized **Knapsack dynamic programming algorithm**. When you enter your exact pocket budget, it scans all available food items across campus cafes, calculates the maximum possible rating and nutritional content, and builds the single optimal combination of dishes to fit your exact budget limit.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    How does live route tracking work?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    When you place an order, our engine solves the shortest delivery route using **Dijkstra's shortest path algorithm**. If you enter an off-campus home address, a new vertex is dynamically injected into the campus graph at runtime. It automatically connects to the nearest exit boundary terminal using GPS-scaled coordinate distances to determine the fastest path out of campus.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    Can I delete my account and clear my data?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes. If you wish to delete your account, navigate to your **Profile** page, scroll down to the **Danger Zone** card, and click **Delete Account**. This will instantly and permanently erase all your personal details, order histories, and cart data from local storage.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                    How does collaborative Group Ordering work?
+                                </button>
+                            </h2>
+                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Group Ordering allows you and your roommates to create a shared order room. The system aggregates all member items into a single payment list. Then, using a custom graph geometric median calculator, it determines the central shortest common pickup point to split the walking delivery distance equally among everyone.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Chatbot Column -->
+                <div class="col-lg-5">
+                    <div class="card glass-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="fw-bold mb-3"><i class="fa-solid fa-robot text-primary"></i> MunchBot Assistant</h5>
+                            <p class="text-secondary small mb-4">Chat with our bot for instant help regarding orders, refunds, and delivery routes.</p>
+                            
+                            <div class="chat-box mb-4" id="chatBox">
+                                <div class="chat-msg agent">
+                                    Hello there! I'm your MunchHub Support Assistant. How can I help you today? Try typing "order", "budget", or "delivery".
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <input type="text" id="chatInput" class="form-control munch-input" placeholder="Type your query..." aria-label="Query">
+                            <button class="munch-btn munch-btn-primary px-3" id="sendChatBtn" type="button">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact & Form Section -->
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card glass-card p-4">
+                        <h5 class="fw-bold mb-4"><i class="fa-solid fa-paper-plane text-primary"></i> Raise a Support Ticket</h5>
+                        <form id="supportTicketForm">
+                            <div class="mb-3">
+                                <label class="form-label small text-secondary fw-semibold">YOUR EMAIL</label>
+                                <input type="email" id="ticketEmail" class="form-control munch-input" placeholder="e.g. name@munchhub.in" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small text-secondary fw-semibold">SUBJECT</label>
+                                <input type="text" id="ticketSubject" class="form-control munch-input" placeholder="e.g. Delay in food delivery" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small text-secondary fw-semibold">ISSUE DETAILS</label>
+                                <textarea id="ticketBody" class="form-control munch-input" rows="4" placeholder="Describe your query or problem in detail..." required></textarea>
+                            </div>
+                            <button type="submit" class="munch-btn munch-btn-primary w-100 py-3">
+                                <i class="fa-solid fa-envelope-open-text"></i> Submit Ticket
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card glass-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="fw-bold mb-4"><i class="fa-solid fa-address-book text-primary"></i> Direct Support Contact</h5>
+                            <p class="text-secondary small mb-4">You can reach out to our primary campus helpdesk directly via phone or email for emergency issues.</p>
+                            
+                            <ul class="list-unstyled d-flex flex-column gap-3 mb-4 text-secondary">
+                                <li class="d-flex align-items-center gap-3">
+                                    <div class="p-2.5 bg-primary bg-opacity-10 border border-primary border-opacity-20 rounded-circle text-primary text-center" style="width: 42px; height: 42px;">
+                                        <i class="fa-solid fa-envelope"></i>
+                                    </div>
+                                    <div>
+                                        <span class="d-block small text-muted">EMAIL ENQUIRIES</span>
+                                        <strong class="text-white-80">support@munchhub.in</strong>
+                                    </div>
+                                </li>
+                                <li class="d-flex align-items-center gap-3">
+                                    <div class="p-2.5 bg-secondary bg-opacity-10 border border-secondary border-opacity-20 rounded-circle text-secondary text-center" style="width: 42px; height: 42px;">
+                                        <i class="fa-solid fa-phone"></i>
+                                    </div>
+                                    <div>
+                                        <span class="d-block small text-muted">INDIAN LANDLINE</span>
+                                        <strong class="text-white-80">080-49652200</strong>
+                                    </div>
+                                </li>
+                                <li class="d-flex align-items-center gap-3">
+                                    <div class="p-2.5 bg-warning bg-opacity-10 border border-warning border-opacity-20 rounded-circle text-warning text-center" style="width: 42px; height: 42px;">
+                                        <i class="fa-solid fa-mobile-button"></i>
+                                    </div>
+                                    <div>
+                                        <span class="d-block small text-muted">CAMPUS HOTLINE (MOBILE)</span>
+                                        <strong class="text-white-80">+91 98765 43210</strong>
+                                    </div>
+                                </li>
+                                <li class="d-flex align-items-center gap-3">
+                                    <div class="p-2.5 bg-info bg-opacity-10 border border-info border-opacity-20 rounded-circle text-info text-center" style="width: 42px; height: 42px;">
+                                        <i class="fa-solid fa-location-dot"></i>
+                                    </div>
+                                    <div>
+                                        <span class="d-block small text-muted">HEADQUARTERS</span>
+                                        <strong class="text-white-80">Jayanagar 4th Block, Bengaluru, Karnataka, India</strong>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="alert alert-secondary glass-card border border-secondary border-opacity-20 mb-0" role="alert">
+                            <i class="fa-solid fa-clock me-2 text-warning"></i> Operational Hours: **9:00 AM - 11:30 PM (IST)**
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap & JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Populate support form email from session if logged in
+            const user = JSON.parse(localStorage.getItem("munch_user"));
+            if (user && user.email) {
+                document.getElementById("ticketEmail").value = user.email;
+            }
+
+            // Ticket Form Submission Handler
+            document.getElementById("supportTicketForm").addEventListener("submit", (e) => {
+                e.preventDefault();
+                showToast("Ticket submitted successfully! We will get back to you shortly.");
+                document.getElementById("ticketSubject").value = "";
+                document.getElementById("ticketBody").value = "";
+            });
+
+            // Chatbot Handler
+            const chatBox = document.getElementById("chatBox");
+            const chatInput = document.getElementById("chatInput");
+            const sendChatBtn = document.getElementById("sendChatBtn");
+
+            function addChatMessage(message, sender = "agent") {
+                const msgDiv = document.createElement("div");
+                msgDiv.className = `chat-msg ${sender}`;
+                msgDiv.innerText = message;
+                chatBox.appendChild(msgDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+
+            function handleBotReply(text) {
+                const cleanText = text.toLowerCase();
+                let reply = "I'm sorry, I didn't quite get that. Could you please ask about 'order', 'budget', or 'delivery'?";
+
+                if (cleanText.includes("order") || cleanText.includes("status")) {
+                    const activeUser = JSON.parse(localStorage.getItem("munch_user"));
+                    if (activeUser && activeUser.orders && activeUser.orders.length > 0) {
+                        const lastOrder = activeUser.orders[0];
+                        reply = `I found your last order (${lastOrder.id}) placed on ${lastOrder.date}. Its status is currently "${lastOrder.status}".`;
+                    } else {
+                        reply = "I couldn't find any orders in your account yet. Visit My Cart to place an order!";
+                    }
+                } else if (cleanText.includes("budget") || cleanText.includes("optimizer") || cleanText.includes("money")) {
+                    reply = "To use the Budget Planner, click on 'Budget Meals' in your sidebar navigation. Enter your exact budget and we will solve the optimal combination for you!";
+                } else if (cleanText.includes("delivery") || cleanText.includes("route") || cleanText.includes("map") || cleanText.includes("track")) {
+                    reply = "We calculate delivery routes dynamically using Dijkstra's shortest path algorithm. You can track your active dispatches under 'Track Orders' in the sidebar!";
+                } else if (cleanText.includes("hi") || cleanText.includes("hello") || cleanText.includes("hey")) {
+                    reply = "Hello! How can I assist you with your campus dining experience today?";
+                } else if (cleanText.includes("delete") || cleanText.includes("account")) {
+                    reply = "To delete your account, go to the Profile page, scroll down to the 'Danger Zone' at the bottom of the form, and click 'Delete Account'.";
+                }
+
+                setTimeout(() => {
+                    addChatMessage(reply, "agent");
+                }, 750);
+            }
+
+            function processSendChat() {
+                const val = chatInput.value.trim();
+                if (!val) return;
+                addChatMessage(val, "user");
+                chatInput.value = "";
+                handleBotReply(val);
+            }
+
+            sendChatBtn.addEventListener("click", processSendChat);
+            chatInput.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") {
+                    processSendChat();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

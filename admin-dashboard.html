@@ -18,8 +18,32 @@
         }
     </script>
     <style>
-        /* Admin Dark Theme Overrides */
+        /* Admin Theme Tokens - Responsive to Light & Dark Modes */
         :root {
+            /* Light mode values */
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(99, 102, 241, 0.15);
+        }
+        
+        /* Dark mode values by default or when data-theme is dark */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #0f172a;
+                --bg-secondary: #1e293b;
+                --bg-tertiary: #334155;
+                --text-primary: #f8fafc;
+                --text-secondary: #94a3b8;
+                --glass-bg: rgba(30, 41, 59, 0.7);
+                --glass-border: rgba(255, 255, 255, 0.08);
+            }
+        }
+        
+        [data-theme="dark"] {
             --bg-primary: #0f172a;
             --bg-secondary: #1e293b;
             --bg-tertiary: #334155;
@@ -28,10 +52,27 @@
             --glass-bg: rgba(30, 41, 59, 0.7);
             --glass-border: rgba(255, 255, 255, 0.08);
         }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(99, 102, 241, 0.15);
+        }
+
         body {
             background-color: var(--bg-primary);
             color: var(--text-primary);
         }
+        
+        /* Heading Visibility Safeguards */
+        h1, h2, h3, h4, h5, h6, .card-title, .stats-card h2 {
+            color: var(--text-primary) !important;
+        }
+
         .admin-sidebar {
             width: var(--sidebar-width);
             background: var(--bg-secondary);
@@ -94,6 +135,42 @@
         .admin-modal-content .table td {
             border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
         }
+
+        /* Force light text to adapt to light theme, but exclude elements that need white text on dark backgrounds like badges, buttons, and alert banners */
+        [data-theme="light"] .text-white:not(.badge):not(.btn):not(.alert):not([class*="bg-"]):not([class*="btn-"]):not(.munch-btn) {
+            color: var(--text-primary) !important;
+        }
+        [data-theme="light"] .text-white-50:not(.badge):not(.btn):not(.alert):not([class*="bg-"]):not([class*="btn-"]):not(.munch-btn) {
+            color: var(--text-primary) !important;
+            opacity: 0.75 !important;
+        }
+        
+        /* Dynamic table cell and header visibility overrides */
+        .table th, .table td {
+            color: var(--text-primary) !important;
+        }
+        
+        /* Override Bootstrap's hardcoded dark table theme in light mode */
+        [data-theme="light"] .table-dark {
+            color: var(--text-primary) !important;
+            --bs-table-color: var(--text-primary) !important;
+            --bs-table-bg: transparent !important;
+            --bs-table-border-color: var(--glass-border) !important;
+        }
+
+        /* Glassmorphic light modal overrides */
+        [data-theme="light"] .admin-modal-content {
+            background: rgba(255, 255, 255, 0.95) !important;
+            color: var(--text-primary) !important;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid var(--glass-border) !important;
+        }
+
+        /* Make sure dark cards in high volume list adapt to light mode */
+        [data-theme="light"] .bg-slate-800 {
+            background-color: var(--bg-secondary) !important;
+            border-color: var(--glass-border) !important;
+        }
     </style>
 </head>
 <body>
@@ -109,7 +186,7 @@
                 
                 <!-- Profile Indicator -->
                 <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
-                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80" alt="Admin Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="admin-avatar-circle rounded-circle shadow d-flex align-items-center justify-content-center bg-danger text-white fw-bold" style="width: 45px; height: 45px; min-width: 45px; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">A</div>
                     <div class="overflow-hidden">
                         <h6 class="mb-0 fw-bold text-truncate" id="sidebarAdminName">Dean O'Food</h6>
                         <span class="text-muted small text-truncate d-block">Administrator</span>
@@ -160,8 +237,8 @@
                             <span class="small text-secondary fw-semibold">TOTAL ACTIVE USERS</span>
                             <div class="fs-3 text-primary"><i class="fa-solid fa-users"></i></div>
                         </div>
-                        <h2 class="fw-bold mb-1">248</h2>
-                        <span class="text-success small"><i class="fa-solid fa-arrow-trend-up"></i> +12% this week</span>
+                        <h2 class="fw-bold mb-1" id="statUsersCount">0</h2>
+                        <span class="text-success small" id="statUsersTrend"><i class="fa-solid fa-circle-check"></i> System online</span>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -170,7 +247,7 @@
                             <span class="small text-secondary fw-semibold">QUEUE DISPATCH ORDERS</span>
                             <div class="fs-3 text-secondary"><i class="fa-solid fa-list-ol"></i></div>
                         </div>
-                        <h2 class="fw-bold mb-1" id="statOrdersCount">42</h2>
+                        <h2 class="fw-bold mb-1" id="statOrdersCount">0</h2>
                         <span class="text-warning small"><i class="fa-solid fa-clock"></i> Active prepare pipeline</span>
                     </div>
                 </div>
@@ -180,8 +257,8 @@
                             <span class="small text-secondary fw-semibold">MANAGED MEALS</span>
                             <div class="fs-3 text-success"><i class="fa-solid fa-utensils"></i></div>
                         </div>
-                        <h2 class="fw-bold mb-1" id="statFoodsCount">12</h2>
-                        <span class="text-muted small">Distributed in 5 canteens</span>
+                        <h2 class="fw-bold mb-1" id="statFoodsCount">0</h2>
+                        <span class="text-muted small" id="statCanteensCount">Distributed in 5 canteens</span>
                     </div>
                 </div>
             </div>
@@ -245,8 +322,18 @@
             const foods = JSON.parse(localStorage.getItem("munch_foods")) || [];
 
             // Update statistics numbers
+            const localUser = JSON.parse(localStorage.getItem("munch_user"));
+            const adminUser = JSON.parse(localStorage.getItem("munch_admin"));
+            let activeUserCount = 0;
+            if (localUser) activeUserCount++;
+            if (adminUser) activeUserCount++;
+            
+            document.getElementById("statUsersCount").innerText = activeUserCount;
             document.getElementById("statOrdersCount").innerText = orders.length;
             document.getElementById("statFoodsCount").innerText = foods.length;
+
+            const restaurants = JSON.parse(localStorage.getItem("munch_restaurants")) || [];
+            document.getElementById("statCanteensCount").innerText = `Distributed in ${restaurants.length} canteens`;
 
             // Display Warning Banner for Payments Awaiting Canteen Approval
             const awaitingCount = orders.filter(o => o.status === "Paid (Awaiting Approval)").length;
@@ -294,6 +381,33 @@
                 recentOrdersBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No orders in queue.</td></tr>`;
             }
 
+            // Details Modal logic for Dishes
+            const adminFoodDetailsModal = new bootstrap.Modal(document.getElementById("adminFoodDetailsModal"));
+            window.showAdminFoodDetails = function(foodId) {
+                const foodsList = JSON.parse(localStorage.getItem("munch_foods")) || [];
+                const food = foodsList.find(f => f.id === parseInt(foodId));
+                if (!food) return;
+
+                document.getElementById("detailFoodImage").src = food.image;
+                document.getElementById("detailFoodName").innerText = food.name;
+                document.getElementById("detailFoodCategory").innerText = food.category;
+                
+                const isVeg = food.veg === true || food.veg === "true";
+                document.getElementById("detailFoodVeg").innerHTML = isVeg ? 
+                    `<span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-25"><i class="fa-solid fa-leaf"></i> Veg</span>` : 
+                    `<span class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-25"><i class="fa-solid fa-drumstick-bite"></i> Non-Veg</span>`;
+                
+                document.getElementById("detailFoodPrice").innerText = `₹${food.price}`;
+                document.getElementById("detailFoodRating").innerHTML = `<i class="fa-solid fa-star"></i> ${food.rating || '4.5'}`;
+                document.getElementById("detailFoodDesc").innerText = food.description || 'No description available.';
+                document.getElementById("detailFoodPopularity").innerText = `${food.popularity || 0} orders`;
+                document.getElementById("detailFoodCalories").innerText = `${food.calories || 320} kcal`;
+                
+                document.getElementById("detailFoodEditLink").href = `admin-manage-foods.html?editId=${food.id}`;
+
+                adminFoodDetailsModal.show();
+            };
+
             // Load high volume foods (sort mock foods by popularity descending)
             const popContainer = document.getElementById("admin-popular-foods");
             if (popContainer && foods.length > 0) {
@@ -305,7 +419,7 @@
                     row.className = "d-flex align-items-center gap-3 p-2 rounded bg-slate-800 border border-secondary shadow-sm hover-scale cursor-pointer";
                     row.setAttribute("data-food-id", food.id);
                     row.addEventListener("click", () => {
-                        window.location.href = "admin-manage-foods.html";
+                        showAdminFoodDetails(food.id);
                     });
                     row.innerHTML = `
                         <img src="${food.image}" class="rounded" style="width: 45px; height: 45px; object-fit: cover;">
@@ -330,14 +444,27 @@
                 const usersBody = document.getElementById("modal-users-body");
                 usersBody.innerHTML = "";
                 
-                const activeUsersList = [
-                    { name: "Rahul Verma", email: "rahul.verma@nit.edu", college: "NIT Campus", address: "Room 304, Hostel Block B", status: "Active Now" },
-                    { name: "Priya Sharma", email: "priya.s@nit.edu", college: "NIT Campus", address: "Room 102, Hostel Block A", status: "Active Now" },
-                    { name: "Amit Patel", email: "amit.patel@nit.edu", college: "NIT Campus", address: "Room 412, Hostel Block B", status: "Active (Idle)" },
-                    { name: "Sneha Reddy", email: "sneha.r@nit.edu", college: "NIT Campus", address: "Room 205, Hostel Block A", status: "Active Now" },
-                    { name: "Vikram Singh", email: "vikram.s@nit.edu", college: "NIT Campus", address: "Room 318, Hostel Block B", status: "Offline" },
-                    { name: "Dean O'Food", email: "dean.food@munchhub.edu", college: "Canteen Operations", address: "Central Kitchen Office", status: "Active Now" }
-                ];
+                const activeUsersList = [];
+                const localUser = JSON.parse(localStorage.getItem("munch_user"));
+                if (localUser) {
+                    activeUsersList.push({
+                        name: localUser.name,
+                        email: localUser.email,
+                        college: localUser.college,
+                        address: localUser.address || "Off-Campus",
+                        status: "Active Now"
+                    });
+                }
+                const adminUser = JSON.parse(localStorage.getItem("munch_admin"));
+                if (adminUser) {
+                    activeUsersList.push({
+                        name: adminUser.name,
+                        email: adminUser.email,
+                        college: adminUser.role || "Canteen Operations",
+                        address: "Central Kitchen Office",
+                        status: "Active Now"
+                    });
+                }
                 
                 activeUsersList.forEach(u => {
                     const tr = document.createElement("tr");
@@ -415,7 +542,7 @@
                         tr.addEventListener("click", () => {
                             managedMealsModal.hide();
                             setTimeout(() => {
-                                window.location.href = "admin-manage-foods.html";
+                                showAdminFoodDetails(food.id);
                             }, 300);
                         });
                         tr.innerHTML = `
@@ -543,5 +670,57 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal: Admin Food Details -->
+    <div class="modal fade" id="adminFoodDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content admin-modal-content">
+                <div class="modal-header admin-modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-primary"><i class="fa-solid fa-circle-info me-2"></i> Dish Detailed Specifications</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <div class="text-center mb-4">
+                        <img id="detailFoodImage" src="" class="rounded-4 shadow-lg w-100" style="max-height: 250px; object-fit: cover; border: 1px solid var(--glass-border);">
+                    </div>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h4 id="detailFoodName" class="fw-bold mb-1 text-white"></h4>
+                            <span id="detailFoodCategory" class="badge bg-secondary"></span>
+                            <span id="detailFoodVeg" class="ms-1"></span>
+                        </div>
+                        <div class="text-end">
+                            <h3 id="detailFoodPrice" class="fw-bold text-primary mb-0"></h3>
+                            <span id="detailFoodRating" class="text-warning small"><i class="fa-solid fa-star"></i> 4.5</span>
+                        </div>
+                    </div>
+                    <hr class="border-secondary my-3">
+                    <div class="mb-3">
+                        <label class="form-label small text-secondary fw-semibold">DESCRIPTION</label>
+                        <p id="detailFoodDesc" class="text-white-50 small mb-0"></p>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="p-3 rounded bg-slate-800 bg-opacity-50 border border-secondary text-center">
+                                <span class="small text-secondary d-block">POPULARITY</span>
+                                <strong id="detailFoodPopularity" class="text-white"></strong>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded bg-slate-800 bg-opacity-50 border border-secondary text-center">
+                                <span class="small text-secondary d-block">EST. CALORIES</span>
+                                <strong id="detailFoodCalories" class="text-white">320 kcal</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer admin-modal-footer">
+                    <a id="detailFoodEditLink" href="admin-manage-foods.html" class="munch-btn munch-btn-primary text-decoration-none py-2 px-4 rounded-pill small"><i class="fa-solid fa-pen-to-square me-1"></i> Edit Dish Details</a>
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

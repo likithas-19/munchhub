@@ -88,9 +88,9 @@
                 
                 <!-- Profile Indicator -->
                 <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
-                    <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80" alt="Student Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="profile-avatar-circle rounded-circle shadow d-flex align-items-center justify-content-center bg-primary text-white fw-bold" style="width: 45px; height: 45px; min-width: 45px; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">U</div>
                     <div class="overflow-hidden">
-                        <h6 class="mb-0 fw-bold text-truncate profile-welcome-name">Rahul Verma</h6>
+                        <h6 class="mb-0 fw-bold text-truncate profile-welcome-name">Munch User</h6>
                         <span class="text-muted small text-truncate d-block profile-welcome-college">NIT Campus</span>
                     </div>
                 </div>
@@ -99,12 +99,6 @@
                 <ul class="sidebar-menu">
                     <li class="sidebar-item">
                         <a href="dashboard.html" class="sidebar-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="mood-meals.html" class="sidebar-link"><i class="fa-solid fa-face-smile"></i> Mood Meals</a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="study-meals.html" class="sidebar-link"><i class="fa-solid fa-book"></i> Study Meals</a>
                     </li>
                     <li class="sidebar-item">
                         <a href="budget-meals.html" class="sidebar-link"><i class="fa-solid fa-wallet"></i> Budget Meals</a>
@@ -265,8 +259,8 @@
             // Sync visual order text details
             document.getElementById("trackerOrderId").innerText = latestOrder.id;
 
-            // Fetch graph configuration
-            const graph = MunchData.campusGraph;
+            // Fetch graph configuration (deep copy to allow runtime graph mutations)
+            const graph = JSON.parse(JSON.stringify(MunchData.campusGraph));
             const nodes = graph.nodes;
             const edges = graph.edges;
 
@@ -288,15 +282,89 @@
             }
             document.getElementById("trackerCanteenNode").innerText = canteenName;
 
-            // Determine Destination Hostel Node ID
-            // राहुल वर्मा's profile hostel: Block A -> Node A, Block B -> Node B
+            // Determine Destination Node ID dynamically based on specified delivery address
             let endNodeId = "B"; // Default Hostel B
+            let destinationName = "Hostel Block B";
             const studentUser = JSON.parse(localStorage.getItem("munch_user")) || {};
-            const address = (studentUser.address || "").toUpperCase();
-            if (address.includes("HOSTEL BLOCK A") || address.includes("BLOCK A")) {
+            
+            const customLocation = (latestOrder.deliveryLocation || "").trim();
+            const fallbackLocation = (studentUser.address || "").trim();
+            const finalDestination = customLocation || fallbackLocation || "Hostel Block B";
+            const destUpper = finalDestination.toUpperCase();
+            
+            if (destUpper === "HOSTEL BLOCK A" || destUpper === "BLOCK A") {
                 endNodeId = "A";
+                destinationName = "Hostel Block A";
+            } else if (destUpper === "HOSTEL BLOCK B" || destUpper === "BLOCK B") {
+                endNodeId = "B";
+                destinationName = "Hostel Block B";
+            } else if (destUpper === "CENTRAL LIBRARY" || destUpper === "LIBRARY" || destUpper === "CENTRAL LIBRARY JUNCTION") {
+                endNodeId = "J";
+                destinationName = "Central Library Junction";
+            } else if (destUpper === "AUDITORIUM" || destUpper === "AUDITORIUM CROSS") {
+                endNodeId = "K";
+                destinationName = "Auditorium Cross";
+            } else {
+                // RUNTIME ADDRESS DYNAMIC INJECTION
+                endNodeId = "U";
+                destinationName = finalDestination;
+                
+                // 1. Generate coordinates using a deterministic string-hashing algorithm
+                let hash = 0;
+                for (let i = 0; i < finalDestination.length; i++) {
+                    hash = finalDestination.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                
+                const seedVal = Math.abs(hash) % 3;
+                let customX = 100;
+                let customY = 80;
+                
+                if (seedVal === 0) {
+                    customX = 75 + (Math.abs(hash ^ 0x987) % 65);
+                    customY = 60 + (Math.abs(hash ^ 0x654) % 55);
+                } else if (seedVal === 1) {
+                    customX = 75 + (Math.abs(hash ^ 0x321) % 65);
+                    customY = 350 + (Math.abs(hash ^ 0xabc) % 50);
+                } else {
+                    customX = 730 + (Math.abs(hash ^ 0xdef) % 55);
+                    customY = 80 + (Math.abs(hash ^ 0xef1) % 80);
+                }
+                
+                // 2. Spawn dynamic node
+                nodes.push({
+                    id: "U",
+                    name: destinationName,
+                    type: "hostel", // Renders as house icon
+                    x: customX,
+                    y: customY
+                });
+                
+                // 3. Connect Node U to closest border exit node
+                let closestBorderNode = "A";
+                let minDistance = Infinity;
+                
+                nodes.forEach(node => {
+                    if (node.id === "A" || node.id === "B" || node.id === "L" || node.id === "S" || node.id === "H" || node.id === "N") {
+                        const dx = node.x - customX;
+                        const dy = node.y - customY;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist < minDistance) {
+                            minDistance = dist;
+                            closestBorderNode = node.id;
+                        }
+                    }
+                });
+                
+                // Determine a scaled weight
+                const customWeight = Math.max(1, Math.round(minDistance / 60) + 1);
+                
+                edges.push({
+                    from: closestBorderNode,
+                    to: "U",
+                    weight: customWeight
+                });
             }
-            document.getElementById("trackerHostelNode").innerText = endNodeId === "A" ? "Hostel Block A" : "Hostel Block B";
+            document.getElementById("trackerHostelNode").innerText = destinationName;
 
             // Run router solver algorithm
             let dijkstraResult = null;
@@ -480,6 +548,17 @@
                 }
             }
 
+            const paddingX = 40;
+            const paddingY = 40;
+
+            function getX(rawX) {
+                return paddingX + ((rawX - 150) / (750 - 150)) * (canvas.width - paddingX * 2);
+            }
+
+            function getY(rawY) {
+                return paddingY + ((rawY - 120) / (420 - 120)) * (canvas.height - paddingY * 2);
+            }
+
             function drawGraph() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
@@ -511,8 +590,8 @@
                     const isPath = isEdgeInShortestPath(edge.from, edge.to);
 
                     ctx.beginPath();
-                    ctx.moveTo(fromNode.x, fromNode.y);
-                    ctx.lineTo(toNode.x, toNode.y);
+                    ctx.moveTo(getX(fromNode.x), getY(fromNode.y));
+                    ctx.lineTo(getX(toNode.x), getY(toNode.y));
                     ctx.lineWidth = isPath ? 6 : 2;
                     ctx.strokeStyle = isPath ? "rgba(99, 102, 241, 0.85)" : (isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(15, 23, 42, 0.08)");
                     
@@ -529,7 +608,7 @@
                     const midX = (fromNode.x + toNode.x) / 2;
                     const midY = (fromNode.y + toNode.y) / 2;
                     ctx.beginPath();
-                    ctx.arc(midX, midY, 11, 0, 2 * Math.PI);
+                    ctx.arc(getX(midX), getY(midY), 11, 0, 2 * Math.PI);
                     ctx.fillStyle = isDark ? "#1e293b" : "#f1f5f9";
                     ctx.strokeStyle = isPath ? "#6366f1" : (isDark ? "#334155" : "#cbd5e1");
                     ctx.lineWidth = 1;
@@ -540,7 +619,7 @@
                     ctx.font = "bold 9px 'Outfit', sans-serif";
                     ctx.textAlign = "center";
                     ctx.textBaseline = "middle";
-                    ctx.fillText(edge.weight, midX, midY);
+                    ctx.fillText(edge.weight, getX(midX), getY(midY));
                 });
 
                 // 2. Draw nodes
@@ -562,7 +641,7 @@
                     const inPath = shortestPath.includes(node.id);
 
                     ctx.beginPath();
-                    ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
+                    ctx.arc(getX(node.x), getY(node.y), radius, 0, 2 * Math.PI);
                     ctx.fillStyle = color;
                     
                     if (inPath) {
@@ -588,24 +667,24 @@
                     else if (node.type === "restaurant") icon = ""; // store
                     
                     if (icon) {
-                        ctx.fillText(icon, node.x, node.y);
+                        ctx.fillText(icon, getX(node.x), getY(node.y));
                     } else {
                         ctx.font = "bold 9px 'Outfit', sans-serif";
-                        ctx.fillText(node.id, node.x, node.y);
+                        ctx.fillText(node.id, getX(node.x), getY(node.y));
                     }
 
                     // Node Label (Only draw label for the start restaurant and destination hostel to keep map clean!)
                     if (node.id === startNodeId || node.id === endNodeId) {
                         ctx.fillStyle = isDark ? "#f8fafc" : "#0f172a";
                         ctx.font = "bold 10px 'Outfit', sans-serif";
-                        ctx.fillText(node.name.split(" (")[0], node.x, node.y - radius - 6);
+                        ctx.fillText(node.name.split(" (")[0], getX(node.x), getY(node.y) - radius - 6);
                     }
                 });
 
                 // 3. Draw Rider avatar
                 if (rider.active) {
                     ctx.beginPath();
-                    ctx.arc(rider.x, rider.y, 11, 0, 2 * Math.PI);
+                    ctx.arc(getX(rider.x), getY(rider.y), 11, 0, 2 * Math.PI);
                     ctx.fillStyle = "#f59e0b"; // Golden yellow
                     ctx.shadowBlur = 10;
                     ctx.shadowColor = "#f59e0b";
@@ -620,12 +699,12 @@
                     ctx.font = "12px Arial";
                     ctx.textAlign = "center";
                     ctx.textBaseline = "middle";
-                    ctx.fillText("🛵", rider.x, rider.y);
+                    ctx.fillText("🛵", getX(rider.x), getY(rider.y));
 
                     // Tiny indicator text above rider
                     ctx.fillStyle = "#f59e0b";
                     ctx.font = "bold 8px 'Outfit', sans-serif";
-                    ctx.fillText("OUT FOR DELIVERY", rider.x, rider.y - 18);
+                    ctx.fillText("OUT FOR DELIVERY", getX(rider.x), getY(rider.y) - 18);
                 }
             }
 

@@ -1,6 +1,34 @@
 // Munch Hub - Core Frontend Logic, State Synchronization, & Reusable UI Components
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Session Check (Redirect to login if not logged in on a protected student page)
+    const pathname = window.location.pathname.toLowerCase();
+    const isPublicPage = pathname.includes("login.html") || 
+                         pathname.includes("register.html") || 
+                         pathname.endsWith("/") || 
+                         pathname.includes("index.html") ||
+                         pathname.includes("admin-") ||
+                         !pathname.endsWith(".html");
+
+    const currentUserObj = localStorage.getItem("munch_user");
+    if (!currentUserObj && !isPublicPage) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    // Intercept logout and exit links to correctly clear sessions
+    const logoutLinks = document.querySelectorAll("a[href='index.html']");
+    logoutLinks.forEach(link => {
+        if (link.textContent.includes("Logout") || link.textContent.includes("Exit")) {
+            link.addEventListener("click", () => {
+                localStorage.removeItem("munch_user");
+                localStorage.removeItem("munch_cart");
+                localStorage.removeItem("munch_latest_order");
+                sessionStorage.removeItem("munch_admin_session");
+            });
+        }
+    });
+
     initTheme();
     setupNavigationHooks();
     updateSidebarProfile();
@@ -258,6 +286,24 @@ function setupNavigationHooks() {
 }
 
 // 6. PROFILE DATA SYNC
+function getDeterministicColor(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const colors = [
+        'linear-gradient(135deg, #4f46e5 0%, #312e81 100%)', // Indigo
+        'linear-gradient(135deg, #0284c7 0%, #0c4a6e 100%)', // Sky Blue
+        'linear-gradient(135deg, #0d9488 0%, #115e59 100%)', // Teal
+        'linear-gradient(135deg, #ea580c 0%, #7c2d12 100%)', // Orange
+        'linear-gradient(135deg, #db2777 0%, #701a75 100%)', // Pink
+        'linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%)', // Blue
+        'linear-gradient(135deg, #16a34a 0%, #14532d 100%)'  // Green
+    ];
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+}
+
 function updateSidebarProfile() {
     const user = JSON.parse(localStorage.getItem("munch_user"));
     if (user) {
@@ -269,6 +315,31 @@ function updateSidebarProfile() {
 
         const emailTexts = document.querySelectorAll(".profile-welcome-email");
         emailTexts.forEach(el => el.innerText = user.email);
+
+        // Update initials in student avatar circles
+        const initials = user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+        const avatarCircles = document.querySelectorAll(".profile-avatar-circle");
+        avatarCircles.forEach(el => {
+            el.innerText = initials;
+            el.style.background = getDeterministicColor(user.name);
+        });
+
+        // Also update initials on the profile details page if present
+        const largeAvatar = document.querySelector(".profile-avatar-circle-large");
+        if (largeAvatar) {
+            largeAvatar.innerText = initials;
+            largeAvatar.style.background = getDeterministicColor(user.name);
+        }
+    }
+
+    // Update initials in admin avatar circles (if admin user session is active)
+    const admin = JSON.parse(localStorage.getItem("munch_admin"));
+    if (admin) {
+        const adminInitials = admin.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+        const adminAvatarCircles = document.querySelectorAll(".admin-avatar-circle");
+        adminAvatarCircles.forEach(el => {
+            el.innerText = adminInitials;
+        });
     }
 }
 
@@ -326,6 +397,38 @@ function injectGlobalVegFilterAndSidebar() {
         }
     }
 
+    // A2. Inject "Smart Menu" Link in Sidebar right under Dashboard for student pages
+    if (sidebarMenu && !isAdminPage && !document.getElementById("sidebarSmartMenuLink")) {
+        const dashboardLink = sidebarMenu.querySelector("a[href='dashboard.html']");
+        if (dashboardLink) {
+            const dashboardLi = dashboardLink.closest(".sidebar-item");
+            const li = document.createElement("li");
+            li.className = "sidebar-item";
+            li.innerHTML = `
+                <a href="menu.html" id="sidebarSmartMenuLink" class="sidebar-link">
+                    <i class="fa-solid fa-utensils"></i> Smart Menu
+                </a>
+            `;
+            dashboardLi.insertAdjacentElement("afterend", li);
+        }
+    }
+
+    // A3. Inject "Help Centre" Link in Sidebar right under Profile for student pages
+    if (sidebarMenu && !isAdminPage && !document.getElementById("sidebarHelpCentreLink")) {
+        const profileLink = sidebarMenu.querySelector("a[href='profile.html']");
+        if (profileLink) {
+            const profileLi = profileLink.closest(".sidebar-item");
+            const li = document.createElement("li");
+            li.className = "sidebar-item";
+            li.innerHTML = `
+                <a href="help.html" id="sidebarHelpCentreLink" class="sidebar-link">
+                    <i class="fa-solid fa-circle-question"></i> Help Centre
+                </a>
+            `;
+            profileLi.insertAdjacentElement("afterend", li);
+        }
+    }
+
     // Highlight active sidebar links for Track Orders
     if (window.location.pathname.toLowerCase().includes("track-order.html")) {
         document.querySelectorAll(".sidebar-link").forEach(link => link.classList.remove("active"));
@@ -335,11 +438,56 @@ function injectGlobalVegFilterAndSidebar() {
         }, 50);
     }
 
-    // B. Inject Veg/Non-Veg Filter Pill Group in Sticky Navbar
+    // Highlight active sidebar links for Smart Menu
+    if (window.location.pathname.toLowerCase().includes("menu.html")) {
+        document.querySelectorAll(".sidebar-link").forEach(link => link.classList.remove("active"));
+        setTimeout(() => {
+            const menuLink = document.getElementById("sidebarSmartMenuLink");
+            if (menuLink) menuLink.classList.add("active");
+        }, 50);
+    }
+
+    // Highlight active sidebar links for Help Centre
+    if (window.location.pathname.toLowerCase().includes("help.html")) {
+        document.querySelectorAll(".sidebar-link").forEach(link => link.classList.remove("active"));
+        setTimeout(() => {
+            const helpLink = document.getElementById("sidebarHelpCentreLink");
+            if (helpLink) helpLink.classList.add("active");
+        }, 50);
+    }
+
+    // B. Inject Veg/Non-Veg Filter Pill Group in suitable layouts (Navbar or Page Headers)
+    const isDashboardPage = window.location.pathname.toLowerCase().includes("dashboard.html");
+    const isMenuPage = window.location.pathname.toLowerCase().includes("menu.html");
+    const isTrendingPage = window.location.pathname.toLowerCase().includes("trending.html");
+    const isBudgetPage = window.location.pathname.toLowerCase().includes("budget-meals.html");
+
     const navbarActions = document.querySelector(".navbar-collapse .d-flex.align-items-center.gap-3");
-    if (navbarActions && !document.querySelector(".munch-veg-filter-pill-group")) {
+    
+    // Choose insertion target based on active page
+    let filterTarget = null;
+    let insertionType = "append";
+
+    if (navbarActions) {
+        filterTarget = navbarActions;
+        insertionType = "prepend";
+    } else if (isMenuPage) {
+        filterTarget = document.getElementById("categoryFilters");
+        insertionType = "prepend";
+    } else if (isTrendingPage) {
+        filterTarget = document.getElementById("sortField")?.closest(".d-flex");
+        insertionType = "prepend";
+    } else if (isDashboardPage) {
+        const recHeader = document.getElementById("recommended-foods-row")?.previousElementSibling;
+        if (recHeader) {
+            filterTarget = recHeader.querySelector(".d-flex") || recHeader;
+            insertionType = "append";
+        }
+    }
+
+    if (filterTarget && !document.querySelector(".munch-veg-filter-pill-group")) {
         const filterGroup = document.createElement("div");
-        filterGroup.className = "munch-veg-filter-pill-group btn-group rounded-pill p-1 bg-secondary bg-opacity-10 border border-secondary me-2";
+        filterGroup.className = "munch-veg-filter-pill-group btn-group rounded-pill p-1 bg-secondary bg-opacity-10 border border-secondary me-2 ms-2";
         filterGroup.style.height = "38px";
         filterGroup.style.display = "inline-flex";
         filterGroup.style.alignItems = "center";
@@ -347,12 +495,21 @@ function injectGlobalVegFilterAndSidebar() {
         const activeFilter = localStorage.getItem("munch_veg_filter") || "all";
         
         filterGroup.innerHTML = `
-            <button class="btn btn-sm rounded-pill px-3 py-1 text-secondary font-weight-bold" data-filter="all" style="font-size: 0.75rem; border: none; transition: var(--transition-smooth); background: ${activeFilter === 'all' ? 'var(--gradient-primary)' : 'transparent'}; color: ${activeFilter === 'all' ? '#white !important' : 'var(--text-secondary)'};">All</button>
-            <button class="btn btn-sm rounded-pill px-3 py-1 text-secondary font-weight-bold" data-filter="veg" style="font-size: 0.75rem; border: none; transition: var(--transition-smooth); background: ${activeFilter === 'veg' ? 'var(--gradient-primary)' : 'transparent'}; color: ${activeFilter === 'veg' ? '#white !important' : 'var(--text-secondary)'};"><i class="fa-solid fa-leaf text-success me-1"></i>Veg</button>
-            <button class="btn btn-sm rounded-pill px-3 py-1 text-secondary font-weight-bold" data-filter="nonveg" style="font-size: 0.75rem; border: none; transition: var(--transition-smooth); background: ${activeFilter === 'nonveg' ? 'var(--gradient-primary)' : 'transparent'}; color: ${activeFilter === 'nonveg' ? '#white !important' : 'var(--text-secondary)'};"><i class="fa-solid fa-drumstick-bite text-danger me-1"></i>Non-Veg</button>
+            <button class="btn btn-sm rounded-pill px-3 py-1 text-secondary font-weight-bold" data-filter="all" style="font-size: 0.75rem; border: none; transition: var(--transition-smooth); background: ${activeFilter === 'all' ? 'var(--gradient-primary)' : 'transparent'}; color: ${activeFilter === 'all' ? '#ffffff' : 'var(--text-secondary)'};">All</button>
+            <button class="btn btn-sm rounded-pill px-3 py-1 text-secondary font-weight-bold" data-filter="veg" style="font-size: 0.75rem; border: none; transition: var(--transition-smooth); background: ${activeFilter === 'veg' ? 'var(--gradient-primary)' : 'transparent'}; color: ${activeFilter === 'veg' ? '#ffffff' : 'var(--text-secondary)'};"><i class="fa-solid fa-leaf text-success me-1"></i>Veg</button>
+            <button class="btn btn-sm rounded-pill px-3 py-1 text-secondary font-weight-bold" data-filter="nonveg" style="font-size: 0.75rem; border: none; transition: var(--transition-smooth); background: ${activeFilter === 'nonveg' ? 'var(--gradient-primary)' : 'transparent'}; color: ${activeFilter === 'nonveg' ? '#ffffff' : 'var(--text-secondary)'};"><i class="fa-solid fa-drumstick-bite text-danger me-1"></i>Non-Veg</button>
         `;
         
-        navbarActions.insertBefore(filterGroup, navbarActions.firstChild);
+        if (insertionType === "prepend") {
+            filterTarget.insertBefore(filterGroup, filterTarget.firstChild);
+        } else if (insertionType === "append") {
+            filterTarget.appendChild(filterGroup);
+        } else if (insertionType === "after") {
+            const wrapper = document.createElement("div");
+            wrapper.className = "d-flex justify-content-center w-100 mb-4";
+            wrapper.appendChild(filterGroup);
+            filterTarget.insertAdjacentElement("afterend", wrapper);
+        }
         
         // Add click events to filter buttons
         filterGroup.querySelectorAll("button").forEach(btn => {
@@ -364,7 +521,7 @@ function injectGlobalVegFilterAndSidebar() {
                 filterGroup.querySelectorAll("button").forEach(b => {
                     const isTarget = b.getAttribute("data-filter") === targetFilter;
                     b.style.background = isTarget ? 'var(--gradient-primary)' : 'transparent';
-                    b.classList.toggle("active-filter-btn", isTarget);
+                    b.style.color = isTarget ? '#ffffff' : 'var(--text-secondary)';
                 });
                 
                 showToast(`Filter set to: ${targetFilter === 'all' ? 'Show All' : targetFilter === 'veg' ? 'Veg Only' : 'Non-Veg Only'}`);
@@ -376,14 +533,6 @@ function injectGlobalVegFilterAndSidebar() {
                 if (typeof window.renderFilteredMenu === "function") window.renderFilteredMenu();
                 if (typeof window.renderMenuPage === "function") window.renderMenuPage();
                 if (typeof window.renderBudgetPlanner === "function") window.renderBudgetPlanner();
-                if (typeof window.renderMoodRecommendations === "function") {
-                    const activeMood = document.querySelector(".mood-selector-card.active")?.getAttribute("data-mood") || "Happy";
-                    window.renderMoodRecommendations(activeMood);
-                }
-                if (typeof window.renderStudyRecommendations === "function") {
-                    const activeStudyMode = document.querySelector(".study-tab-btn.active")?.getAttribute("data-mode") || "Coding";
-                    window.renderStudyRecommendations(activeStudyMode);
-                }
             });
         });
     }

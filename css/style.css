@@ -269,55 +269,40 @@ p {
     transition: var(--transition-smooth);
 }
 
-/* Universal input typing visibility checks */
+/* Universal high-contrast input styles leveraging CSS variables for light/dark/forced modes */
 input, select, textarea, .form-control, .munch-input {
-    color: #0f172a !important; /* Dark charcoal text in light mode for supreme legibility */
+    color: var(--text-primary) !important; /* Rich dark charcoal in light mode, high-contrast white in dark mode */
+    background-color: var(--bg-tertiary) !important; /* Light slate in light mode, dark charcoal in dark mode */
+    border: 1px solid var(--glass-border) !important;
+    font-family: var(--font-secondary) !important;
 }
 
-/* Ensure placeholder is visible but distinct in light mode */
+/* Ensure placeholder is visible but distinct */
 input::placeholder, textarea::placeholder, .form-control::placeholder {
-    color: #64748b !important;
+    color: var(--text-muted) !important;
     opacity: 0.75 !important;
 }
 
-/* Focus state text visibility in light mode */
+/* Dynamic Focus state styling */
 input:focus, select:focus, textarea:focus, .form-control:focus, .munch-input:focus {
-    color: #0f172a !important;
-    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    background-color: var(--bg-secondary) !important; /* Pure white in light, deep dark in dark mode */
     border-color: var(--primary) !important;
     box-shadow: 0 0 0 4px var(--primary-glow) !important;
     outline: none !important;
 }
 
-/* Dark Mode High-Contrast Rules for Typing Elements */
-[data-theme="dark"] input, 
-[data-theme="dark"] select, 
-[data-theme="dark"] textarea, 
-[data-theme="dark"] .form-control, 
-[data-theme="dark"] .munch-input {
-    color: #ffffff !important; /* Pure high-contrast white text when typing in dark mode */
-    background-color: #1f2937 !important; /* Dark charcoal card element background */
-    border-color: rgba(255, 255, 255, 0.15) !important;
-}
-
-/* High contrast placeholders for dark mode */
-[data-theme="dark"] input::placeholder, 
-[data-theme="dark"] textarea::placeholder, 
-[data-theme="dark"] .form-control::placeholder {
-    color: #94a3b8 !important;
-    opacity: 0.7 !important;
-}
-
-/* Dark Mode focus states */
-[data-theme="dark"] input:focus, 
-[data-theme="dark"] select:focus, 
-[data-theme="dark"] textarea:focus, 
-[data-theme="dark"] .form-control:focus, 
-[data-theme="dark"] .munch-input:focus {
-    color: #ffffff !important;
-    background-color: #111827 !important;
-    border-color: var(--primary) !important;
-    box-shadow: 0 0 0 4px var(--primary-glow) !important;
+/* Double-safeguard media query for system dark mode / auto dark mode extensions */
+@media (prefers-color-scheme: dark) {
+    input, select, textarea, .form-control, .munch-input {
+        color: #ffffff !important; /* Enforce high-contrast white text when typing in dark surroundings */
+    }
+    input::placeholder, textarea::placeholder, .form-control::placeholder {
+        color: #94a3b8 !important;
+    }
+    input:focus, select:focus, textarea:focus, .form-control:focus, .munch-input:focus {
+        color: #ffffff !important;
+    }
 }
 
 .munch-btn {

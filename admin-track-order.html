@@ -17,7 +17,32 @@
         }
     </script>
     <style>
+        /* Admin Theme Tokens - Responsive to Light & Dark Modes */
         :root {
+            /* Light mode values */
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(99, 102, 241, 0.15);
+        }
+        
+        /* Dark mode values by default or when data-theme is dark */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #0f172a;
+                --bg-secondary: #1e293b;
+                --bg-tertiary: #334155;
+                --text-primary: #f8fafc;
+                --text-secondary: #94a3b8;
+                --glass-bg: rgba(30, 41, 59, 0.7);
+                --glass-border: rgba(255, 255, 255, 0.08);
+            }
+        }
+        
+        [data-theme="dark"] {
             --bg-primary: #0f172a;
             --bg-secondary: #1e293b;
             --bg-tertiary: #334155;
@@ -26,10 +51,49 @@
             --glass-bg: rgba(30, 41, 59, 0.7);
             --glass-border: rgba(255, 255, 255, 0.08);
         }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(99, 102, 241, 0.15);
+        }
+
         body {
             background-color: var(--bg-primary);
             color: var(--text-primary);
         }
+        
+        /* Heading & Element Visibility Safeguards */
+        h1, h2, h3, h4, h5, h6, .card-title, th {
+            color: var(--text-primary) !important;
+        }
+
+        /* Force light text to adapt to light theme, but exclude elements that need white text on dark backgrounds like badges, buttons, and alert banners */
+        [data-theme="light"] .text-white:not(.badge):not(.btn):not(.alert):not([class*="bg-"]):not([class*="btn-"]):not(.munch-btn) {
+            color: var(--text-primary) !important;
+        }
+        [data-theme="light"] .text-white-50:not(.badge):not(.btn):not(.alert):not([class*="bg-"]):not([class*="btn-"]):not(.munch-btn) {
+            color: var(--text-primary) !important;
+            opacity: 0.75 !important;
+        }
+        
+        /* Dynamic table cell and header visibility overrides */
+        .table th, .table td {
+            color: var(--text-primary) !important;
+        }
+        
+        /* Override Bootstrap's hardcoded dark table theme in light mode */
+        [data-theme="light"] .table-dark {
+            color: var(--text-primary) !important;
+            --bs-table-color: var(--text-primary) !important;
+            --bs-table-bg: transparent !important;
+            --bs-table-border-color: var(--glass-border) !important;
+        }
+
         .admin-sidebar {
             width: var(--sidebar-width);
             background: var(--bg-secondary);
@@ -135,7 +199,7 @@
                 </a>
                 
                 <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
-                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80" alt="Admin Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="admin-avatar-circle rounded-circle shadow d-flex align-items-center justify-content-center bg-danger text-white fw-bold" style="width: 45px; height: 45px; min-width: 45px; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">A</div>
                     <div class="overflow-hidden">
                         <h6 class="mb-0 fw-bold text-truncate" id="sidebarAdminName">Dean O'Food</h6>
                         <span class="text-muted small text-truncate d-block">Administrator</span>
@@ -328,8 +392,8 @@
             // Sync visual order text details
             document.getElementById("trackerOrderId").innerText = matchedOrder.id;
 
-            // Fetch graph configurations
-            const graph = MunchData.campusGraph;
+            // Fetch graph configurations (deep copy to allow runtime graph mutations)
+            const graph = JSON.parse(JSON.stringify(MunchData.campusGraph));
             const nodes = graph.nodes;
             const edges = graph.edges;
 
@@ -357,22 +421,90 @@
             }
             document.getElementById("trackerCanteenNode").innerText = canteenName;
 
-            // Determine Destination Hostel Node ID
-            let endNodeId = "B"; // Default Block B
+            // Determine Destination Node ID dynamically based on specified delivery address
+            let endNodeId = "B"; // Default Hostel B
+            let destinationName = "Hostel Block B";
+            const studentUser = JSON.parse(localStorage.getItem("munch_user")) || {};
             const cleanUser = matchedOrder.user.toLowerCase();
             
-            // Check student address to map Node A / B
-            if (cleanUser === "rahul verma") {
-                const studentUser = JSON.parse(localStorage.getItem("munch_user")) || {};
-                const address = (studentUser.address || "").toUpperCase();
-                if (address.includes("HOSTEL BLOCK A") || address.includes("BLOCK A")) {
-                    endNodeId = "A";
-                }
+            const customLocation = (matchedOrder.deliveryLocation || "").trim();
+            const fallbackLocation = (studentUser.name && cleanUser === studentUser.name.toLowerCase() ? (studentUser.address || "") : "").trim();
+            const finalDestination = customLocation || fallbackLocation || "Hostel Block B";
+            const destUpper = finalDestination.toUpperCase();
+            
+            if (destUpper === "HOSTEL BLOCK A" || destUpper === "BLOCK A") {
+                endNodeId = "A";
+                destinationName = "Hostel Block A";
+            } else if (destUpper === "HOSTEL BLOCK B" || destUpper === "BLOCK B") {
+                endNodeId = "B";
+                destinationName = "Hostel Block B";
+            } else if (destUpper === "CENTRAL LIBRARY" || destUpper === "LIBRARY" || destUpper === "CENTRAL LIBRARY JUNCTION") {
+                endNodeId = "J";
+                destinationName = "Central Library Junction";
+            } else if (destUpper === "AUDITORIUM" || destUpper === "AUDITORIUM CROSS") {
+                endNodeId = "K";
+                destinationName = "Auditorium Cross";
             } else {
-                // Fallback coordinates based on random coordinate hashing
-                if (matchedOrder.total % 2 === 0) endNodeId = "A";
+                // RUNTIME ADDRESS DYNAMIC INJECTION
+                endNodeId = "U";
+                destinationName = finalDestination;
+                
+                // 1. Generate coordinates using deterministic string hashing
+                let hash = 0;
+                for (let i = 0; i < finalDestination.length; i++) {
+                    hash = finalDestination.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                
+                const seedVal = Math.abs(hash) % 3;
+                let customX = 100;
+                let customY = 80;
+                
+                if (seedVal === 0) {
+                    customX = 75 + (Math.abs(hash ^ 0x987) % 65);
+                    customY = 60 + (Math.abs(hash ^ 0x654) % 55);
+                } else if (seedVal === 1) {
+                    customX = 75 + (Math.abs(hash ^ 0x321) % 65);
+                    customY = 350 + (Math.abs(hash ^ 0xabc) % 50);
+                } else {
+                    customX = 730 + (Math.abs(hash ^ 0xdef) % 55);
+                    customY = 80 + (Math.abs(hash ^ 0xef1) % 80);
+                }
+                
+                // 2. Spawn dynamic node
+                nodes.push({
+                    id: "U",
+                    name: destinationName,
+                    type: "hostel", // Renders as house icon
+                    x: customX,
+                    y: customY
+                });
+                
+                // 3. Connect Node U to closest border exit node
+                let closestBorderNode = "A";
+                let minDistance = Infinity;
+                
+                nodes.forEach(node => {
+                    if (node.id === "A" || node.id === "B" || node.id === "L" || node.id === "S" || node.id === "H" || node.id === "N") {
+                        const dx = node.x - customX;
+                        const dy = node.y - customY;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist < minDistance) {
+                            minDistance = dist;
+                            closestBorderNode = node.id;
+                        }
+                    }
+                });
+                
+                // Determine a scaled weight
+                const customWeight = Math.max(1, Math.round(minDistance / 60) + 1);
+                
+                edges.push({
+                    from: closestBorderNode,
+                    to: "U",
+                    weight: customWeight
+                });
             }
-            document.getElementById("trackerHostelNode").innerText = endNodeId === "A" ? "Hostel Block A" : "Hostel Block B";
+            document.getElementById("trackerHostelNode").innerText = destinationName;
 
             // Dijkstra Algorithm path solving
             let dijkstraResult = dijkstra(graph, startNodeId, endNodeId);
@@ -496,8 +628,8 @@
                                 localStorage.setItem("munch_orders", JSON.stringify(list));
                                 
                                 // Sync back to student
-                                if (list[index].user === "Rahul Verma") {
-                                    const student = JSON.parse(localStorage.getItem("munch_user")) || {};
+                                const student = JSON.parse(localStorage.getItem("munch_user")) || {};
+                                if (student.name && list[index].user === student.name) {
                                     if (student.orders) {
                                         const studentIdx = student.orders.findIndex(o => o.id === orderId);
                                         if (studentIdx !== -1) {
@@ -511,6 +643,17 @@
                         }
                     }
                 }
+            }
+
+            const paddingX = 40;
+            const paddingY = 40;
+
+            function getX(rawX) {
+                return paddingX + ((rawX - 150) / (750 - 150)) * (canvas.width - paddingX * 2);
+            }
+
+            function getY(rawY) {
+                return paddingY + ((rawY - 120) / (420 - 120)) * (canvas.height - paddingY * 2);
             }
 
             function drawGraph() {
@@ -543,8 +686,8 @@
                     const isPath = isEdgeInShortestPath(edge.from, edge.to);
 
                     ctx.beginPath();
-                    ctx.moveTo(fromNode.x, fromNode.y);
-                    ctx.lineTo(toNode.x, toNode.y);
+                    ctx.moveTo(getX(fromNode.x), getY(fromNode.y));
+                    ctx.lineTo(getX(toNode.x), getY(toNode.y));
                     ctx.lineWidth = isPath ? 6 : 2;
                     ctx.strokeStyle = isPath ? "rgba(99, 102, 241, 0.85)" : "rgba(255, 255, 255, 0.08)";
                     
@@ -559,7 +702,7 @@
                     const midX = (fromNode.x + toNode.x) / 2;
                     const midY = (fromNode.y + toNode.y) / 2;
                     ctx.beginPath();
-                    ctx.arc(midX, midY, 11, 0, 2 * Math.PI);
+                    ctx.arc(getX(midX), getY(midY), 11, 0, 2 * Math.PI);
                     ctx.fillStyle = "#1e293b";
                     ctx.strokeStyle = isPath ? "#6366f1" : "#334155";
                     ctx.lineWidth = 1;
@@ -570,7 +713,7 @@
                     ctx.font = "bold 9px 'Outfit', sans-serif";
                     ctx.textAlign = "center";
                     ctx.textBaseline = "middle";
-                    ctx.fillText(edge.weight, midX, midY);
+                    ctx.fillText(edge.weight, getX(midX), getY(midY));
                 });
 
                 // 2. Draw nodes
@@ -592,7 +735,7 @@
                     const inPath = shortestPath.includes(node.id);
 
                     ctx.beginPath();
-                    ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
+                    ctx.arc(getX(node.x), getY(node.y), radius, 0, 2 * Math.PI);
                     ctx.fillStyle = color;
                     
                     if (inPath) {
@@ -617,24 +760,24 @@
                     else if (node.type === "restaurant") icon = ""; 
                     
                     if (icon) {
-                        ctx.fillText(icon, node.x, node.y);
+                        ctx.fillText(icon, getX(node.x), getY(node.y));
                     } else {
                         ctx.font = "bold 9px 'Outfit', sans-serif";
-                        ctx.fillText(node.id, node.x, node.y);
+                        ctx.fillText(node.id, getX(node.x), getY(node.y));
                     }
 
                     // Node Label
                     if (node.id === startNodeId || node.id === endNodeId) {
                         ctx.fillStyle = "#f8fafc";
                         ctx.font = "bold 10px 'Outfit', sans-serif";
-                        ctx.fillText(node.name.split(" (")[0], node.x, node.y - radius - 6);
+                        ctx.fillText(node.name.split(" (")[0], getX(node.x), getY(node.y) - radius - 6);
                     }
                 });
 
                 // 3. Draw Rider avatar
                 if (rider.active) {
                     ctx.beginPath();
-                    ctx.arc(rider.x, rider.y, 11, 0, 2 * Math.PI);
+                    ctx.arc(getX(rider.x), getY(rider.y), 11, 0, 2 * Math.PI);
                     ctx.fillStyle = "#f59e0b";
                     ctx.shadowBlur = 10;
                     ctx.shadowColor = "#f59e0b";
@@ -648,11 +791,11 @@
                     ctx.font = "12px Arial";
                     ctx.textAlign = "center";
                     ctx.textBaseline = "middle";
-                    ctx.fillText("🛵", rider.x, rider.y);
+                    ctx.fillText("🛵", getX(rider.x), getY(rider.y));
 
                     ctx.fillStyle = "#f59e0b";
                     ctx.font = "bold 8px 'Outfit', sans-serif";
-                    ctx.fillText("OUT FOR DELIVERY", rider.x, rider.y - 18);
+                    ctx.fillText("OUT FOR DELIVERY", getX(rider.x), getY(rider.y) - 18);
                 }
             }
 

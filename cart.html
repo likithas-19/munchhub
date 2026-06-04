@@ -24,9 +24,9 @@
                 
                 <!-- Profile Indicator -->
                 <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
-                    <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80" alt="Student Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="profile-avatar-circle rounded-circle shadow d-flex align-items-center justify-content-center bg-primary text-white fw-bold" style="width: 45px; height: 45px; min-width: 45px; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">U</div>
                     <div class="overflow-hidden">
-                        <h6 class="mb-0 fw-bold text-truncate profile-welcome-name">Rahul Verma</h6>
+                        <h6 class="mb-0 fw-bold text-truncate profile-welcome-name">Munch User</h6>
                         <span class="text-muted small text-truncate d-block profile-welcome-college">NIT Campus</span>
                     </div>
                 </div>
@@ -35,12 +35,6 @@
                 <ul class="sidebar-menu">
                     <li class="sidebar-item">
                         <a href="dashboard.html" class="sidebar-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="mood-meals.html" class="sidebar-link"><i class="fa-solid fa-face-smile"></i> Mood Meals</a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="study-meals.html" class="sidebar-link"><i class="fa-solid fa-book"></i> Study Meals</a>
                     </li>
                     <li class="sidebar-item">
                         <a href="budget-meals.html" class="sidebar-link"><i class="fa-solid fa-wallet"></i> Budget Meals</a>
@@ -155,6 +149,12 @@
                             </div>
                         </div>
 
+                        <!-- Delivery Location Field -->
+                        <div class="mb-4">
+                            <label class="form-label small text-secondary fw-semibold mb-2"><i class="fa-solid fa-map-pin text-primary me-1"></i> Delivery Address (Hostel Room, Campus Center, or Home/Off-Campus location)</label>
+                            <textarea id="deliveryLocationInput" class="form-control munch-input" rows="2" placeholder="e.g. Room 304, Hostel Block B, NIT Campus OR Home/Off-Campus: 123 Street Name, Bengaluru" required></textarea>
+                        </div>
+
                         <!-- Place Order Actions -->
                         <button id="cartCheckoutBtn" class="munch-btn munch-btn-primary w-100 py-3 mb-2">
                             Place Order & Pay <i class="fa-solid fa-credit-card ms-2"></i>
@@ -265,6 +265,13 @@
             const splitCountInput = document.getElementById("splitCountInput");
             const splitOwesText = document.getElementById("splitOwesAmount");
 
+            // Prepopulate Delivery Location with student's default profile address
+            const studentUser = JSON.parse(localStorage.getItem("munch_user")) || {};
+            const deliveryLocationInput = document.getElementById("deliveryLocationInput");
+            if (deliveryLocationInput) {
+                deliveryLocationInput.value = studentUser.address || "";
+            }
+
             function renderCartPage() {
                 const cart = CartManager.get();
 
@@ -289,9 +296,9 @@
                         </td>
                         <td class="fw-bold">₹${item.price}</td>
                         <td>
-                            <div class="input-group" style="width: 100px; height: 32px;">
+                            <div class="input-group" style="width: 120px; height: 32px;">
                                 <button class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-start-3 cart-qty-minus" data-id="${item.id}"><i class="fa-solid fa-minus"></i></button>
-                                <input type="text" class="form-control form-control-sm text-center py-0 px-1 font-weight-bold" value="${item.quantity}" readonly>
+                                <input type="number" class="form-control form-control-sm text-center py-0 px-1 font-weight-bold cart-qty-input" data-id="${item.id}" value="${item.quantity}" min="1" max="99" style="width: 45px; background-color: var(--bg-tertiary) !important; color: var(--text-primary) !important;">
                                 <button class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-end-3 cart-qty-plus" data-id="${item.id}"><i class="fa-solid fa-plus"></i></button>
                             </div>
                         </td>
@@ -347,6 +354,21 @@
                 }
             });
 
+            // Bind manual typing changes on quantity inputs
+            tableBody.addEventListener("change", (e) => {
+                const inputQty = e.target.closest(".cart-qty-input");
+                if (inputQty) {
+                    const foodId = inputQty.getAttribute("data-id");
+                    let val = parseInt(inputQty.value) || 1;
+                    if (val < 1) val = 1;
+                    if (val > 99) val = 99;
+                    inputQty.value = val;
+                    
+                    CartManager.updateQty(foodId, val);
+                    renderCartPage();
+                }
+            });
+
             // Split Bill Toggle
             splitCheckbox.addEventListener("change", (e) => {
                 splitForm.style.display = e.target.checked ? "block" : "none";
@@ -373,6 +395,13 @@
                 const cart = CartManager.get();
                 if (cart.length === 0) return;
 
+                const location = document.getElementById("deliveryLocationInput").value.trim();
+                if (!location) {
+                    showToast("Please provide a delivery location for this order!", "error");
+                    document.getElementById("deliveryLocationInput").focus();
+                    return;
+                }
+
                 // Reset modal state
                 confirmPaymentBtn.style.display = "block";
                 paymentLoader.style.display = "none";
@@ -392,6 +421,7 @@
 
                 setTimeout(() => {
                     const user = JSON.parse(localStorage.getItem("munch_user")) || {};
+                    const location = document.getElementById("deliveryLocationInput").value.trim();
                     
                     // Construct order record with status "Paid (Awaiting Approval)"
                     const newOrder = {
@@ -399,7 +429,8 @@
                         date: new Date().toISOString().slice(0,10),
                         items: cart,
                         total: CartManager.getTotal(),
-                        status: "Paid (Awaiting Approval)"
+                        status: "Paid (Awaiting Approval)",
+                        deliveryLocation: location
                     };
 
                     // 1. Add to student order history
@@ -412,11 +443,12 @@
                     const itemSummary = cart.map(i => `${i.name} (${i.quantity})`).join(", ");
                     adminOrders.unshift({
                         id: newOrder.id,
-                        user: user.name || "Rahul Verma",
+                        user: user.name || "Munch User",
                         date: newOrder.date,
                         items: itemSummary,
                         total: newOrder.total,
-                        status: "Paid (Awaiting Approval)"
+                        status: "Paid (Awaiting Approval)",
+                        deliveryLocation: location
                     });
                     localStorage.setItem("munch_orders", JSON.stringify(adminOrders));
 

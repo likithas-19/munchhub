@@ -18,8 +18,32 @@
         }
     </script>
     <style>
-        /* Admin Dark Theme Overrides */
+        /* Admin Theme Tokens - Responsive to Light & Dark Modes */
         :root {
+            /* Light mode values */
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(99, 102, 241, 0.15);
+        }
+        
+        /* Dark mode values by default or when data-theme is dark */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #0f172a;
+                --bg-secondary: #1e293b;
+                --bg-tertiary: #334155;
+                --text-primary: #f8fafc;
+                --text-secondary: #94a3b8;
+                --glass-bg: rgba(30, 41, 59, 0.7);
+                --glass-border: rgba(255, 255, 255, 0.08);
+            }
+        }
+        
+        [data-theme="dark"] {
             --bg-primary: #0f172a;
             --bg-secondary: #1e293b;
             --bg-tertiary: #334155;
@@ -28,10 +52,63 @@
             --glass-bg: rgba(30, 41, 59, 0.7);
             --glass-border: rgba(255, 255, 255, 0.08);
         }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(99, 102, 241, 0.15);
+        }
+
         body {
             background-color: var(--bg-primary);
             color: var(--text-primary);
         }
+        
+        /* Heading & Element Visibility Safeguards */
+        h1, h2, h3, h4, h5, h6, .card-title, th {
+            color: var(--text-primary) !important;
+        }
+
+        /* Force light text to adapt to light theme, but exclude elements that need white text on dark backgrounds like badges, buttons, and alert banners */
+        [data-theme="light"] .text-white:not(.badge):not(.btn):not(.alert):not([class*="bg-"]):not([class*="btn-"]):not(.munch-btn) {
+            color: var(--text-primary) !important;
+        }
+        [data-theme="light"] .text-white-50:not(.badge):not(.btn):not(.alert):not([class*="bg-"]):not([class*="btn-"]):not(.munch-btn) {
+            color: var(--text-primary) !important;
+            opacity: 0.75 !important;
+        }
+
+        /* Glassmorphic light modal overrides */
+        [data-theme="light"] .admin-modal-content {
+            background: rgba(255, 255, 255, 0.95) !important;
+            color: var(--text-primary) !important;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid var(--glass-border) !important;
+        }
+
+        /* Make sure dark cards adapt to light mode */
+        [data-theme="light"] .bg-slate-800 {
+            background-color: var(--bg-secondary) !important;
+            border-color: var(--glass-border) !important;
+        }
+        
+        /* Dynamic table cell and header visibility overrides */
+        .table th, .table td {
+            color: var(--text-primary) !important;
+        }
+        
+        /* Override Bootstrap's hardcoded dark table theme in light mode */
+        [data-theme="light"] .table-dark {
+            color: var(--text-primary) !important;
+            --bs-table-color: var(--text-primary) !important;
+            --bs-table-bg: transparent !important;
+            --bs-table-border-color: var(--glass-border) !important;
+        }
+
         .admin-sidebar {
             width: var(--sidebar-width);
             background: var(--bg-secondary);
@@ -76,7 +153,7 @@
                 
                 <!-- Profile Indicator -->
                 <div class="d-flex align-items-center gap-3 p-3 glass-card mb-4">
-                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80" alt="Admin Profile" class="rounded-circle shadow" style="width: 45px; height: 45px; object-fit: cover;">
+                    <div class="admin-avatar-circle rounded-circle shadow d-flex align-items-center justify-content-center bg-danger text-white fw-bold" style="width: 45px; height: 45px; min-width: 45px; font-size: 1.1rem; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">A</div>
                     <div class="overflow-hidden">
                         <h6 class="mb-0 fw-bold text-truncate" id="sidebarAdminName">Dean O'Food</h6>
                         <span class="text-muted small text-truncate d-block">Administrator</span>
@@ -232,6 +309,56 @@
             // Load all current foods from localStorage
             let foodsList = [];
 
+            // Details Modal logic for Dishes
+            const adminFoodDetailsModal = new bootstrap.Modal(document.getElementById("adminFoodDetailsModal"));
+            window.showAdminFoodDetails = function(foodId) {
+                const foodsList = JSON.parse(localStorage.getItem("munch_foods")) || [];
+                const food = foodsList.find(f => f.id === parseInt(foodId));
+                if (!food) return;
+
+                document.getElementById("detailFoodImage").src = food.image;
+                document.getElementById("detailFoodName").innerText = food.name;
+                document.getElementById("detailFoodCategory").innerText = food.category;
+                
+                const isVeg = food.veg === true || food.veg === "true";
+                document.getElementById("detailFoodVeg").innerHTML = isVeg ? 
+                    `<span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-25"><i class="fa-solid fa-leaf"></i> Veg</span>` : 
+                    `<span class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-25"><i class="fa-solid fa-drumstick-bite"></i> Non-Veg</span>`;
+                
+                document.getElementById("detailFoodPrice").innerText = `₹${food.price}`;
+                document.getElementById("detailFoodRating").innerHTML = `<i class="fa-solid fa-star"></i> ${food.rating || '4.5'}`;
+                document.getElementById("detailFoodDesc").innerText = food.description || 'No description available.';
+                document.getElementById("detailFoodPopularity").innerText = `${food.popularity || 0} orders`;
+                document.getElementById("detailFoodCalories").innerText = `${food.calories || 320} kcal`;
+                
+                // Clicking Edit inside details modal closes details and opens CRUD modal
+                document.getElementById("detailFoodEditLink").onclick = function(e) {
+                    e.preventDefault();
+                    adminFoodDetailsModal.hide();
+                    setTimeout(() => {
+                        triggerEditFood(food.id);
+                    }, 300);
+                };
+
+                adminFoodDetailsModal.show();
+            };
+
+            window.triggerEditFood = function(foodId) {
+                const list = JSON.parse(localStorage.getItem("munch_foods")) || [];
+                const food = list.find(f => f.id === parseInt(foodId));
+                if (food) {
+                    modalTitle.innerHTML = `<i class="fa-solid fa-pen text-info"></i> Edit Canteen Dish`;
+                    document.getElementById("editFoodId").value = food.id;
+                    document.getElementById("foodName").value = food.name;
+                    document.getElementById("foodPrice").value = food.price;
+                    document.getElementById("foodCategory").value = food.category;
+                    document.getElementById("foodImage").value = food.image;
+                    document.getElementById("foodDesc").value = food.description;
+                    
+                    bootstrapModal.show();
+                }
+            };
+
             function loadInventoryTable() {
                 foodsList = JSON.parse(localStorage.getItem("munch_foods")) || [];
                 tableBody.innerHTML = "";
@@ -240,8 +367,8 @@
                     foodsList.forEach(food => {
                         const row = document.createElement("tr");
                         row.innerHTML = `
-                            <td><img src="${food.image}" class="rounded" style="width: 50px; height: 42px; object-fit: cover;"></td>
-                            <td class="fw-bold">${food.name}</td>
+                            <td class="cursor-pointer food-detail-trigger" data-id="${food.id}"><img src="${food.image}" class="rounded shadow-sm hover-scale" style="width: 50px; height: 42px; object-fit: cover;"></td>
+                            <td class="fw-bold cursor-pointer food-detail-trigger" data-id="${food.id}" style="transition: var(--transition-smooth);">${food.name}</td>
                             <td><span class="badge bg-secondary">${food.category}</span></td>
                             <td class="fw-bold text-primary">₹${food.price}</td>
                             <td class="text-warning"><i class="fa-solid fa-star"></i> ${food.rating}</td>
@@ -257,6 +384,14 @@
                                 </div>
                             </td>
                         `;
+                        
+                        // Attach detail trigger clicks to image & name cells
+                        row.querySelectorAll(".food-detail-trigger").forEach(el => {
+                            el.addEventListener("click", () => {
+                                showAdminFoodDetails(food.id);
+                            });
+                        });
+
                         tableBody.appendChild(row);
                     });
 
@@ -271,18 +406,7 @@
                 document.querySelectorAll(".edit-food-btn").forEach(btn => {
                     btn.addEventListener("click", () => {
                         const foodId = parseInt(btn.getAttribute("data-id"));
-                        const food = foodsList.find(f => f.id === foodId);
-                        if (food) {
-                            modalTitle.innerHTML = `<i class="fa-solid fa-pen text-info"></i> Edit Canteen Dish`;
-                            document.getElementById("editFoodId").value = food.id;
-                            document.getElementById("foodName").value = food.name;
-                            document.getElementById("foodPrice").value = food.price;
-                            document.getElementById("foodCategory").value = food.category;
-                            document.getElementById("foodImage").value = food.image;
-                            document.getElementById("foodDesc").value = food.description;
-                            
-                            bootstrapModal.show();
-                        }
+                        triggerEditFood(foodId);
                     });
                 });
 
@@ -360,7 +484,68 @@
 
             // Initial Load
             loadInventoryTable();
+
+            // Auto-trigger edit modal if editId parameter is present in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const autoEditId = urlParams.get('editId');
+            if (autoEditId) {
+                setTimeout(() => {
+                    triggerEditFood(autoEditId);
+                }, 400);
+            }
         });
     </script>
+
+    <!-- Modal: Admin Food Details -->
+    <div class="modal fade" id="adminFoodDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content admin-modal-content">
+                <div class="modal-header admin-modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-primary"><i class="fa-solid fa-circle-info me-2"></i> Dish Detailed Specifications</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <div class="text-center mb-4">
+                        <img id="detailFoodImage" src="" class="rounded-4 shadow-lg w-100" style="max-height: 250px; object-fit: cover; border: 1px solid var(--glass-border);">
+                    </div>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h4 id="detailFoodName" class="fw-bold mb-1 text-white"></h4>
+                            <span id="detailFoodCategory" class="badge bg-secondary"></span>
+                            <span id="detailFoodVeg" class="ms-1"></span>
+                        </div>
+                        <div class="text-end">
+                            <h3 id="detailFoodPrice" class="fw-bold text-primary mb-0"></h3>
+                            <span id="detailFoodRating" class="text-warning small"><i class="fa-solid fa-star"></i> 4.5</span>
+                        </div>
+                    </div>
+                    <hr class="border-secondary my-3">
+                    <div class="mb-3">
+                        <label class="form-label small text-secondary fw-semibold">DESCRIPTION</label>
+                        <p id="detailFoodDesc" class="text-white-50 small mb-0"></p>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="p-3 rounded bg-slate-800 bg-opacity-50 border border-secondary text-center">
+                                <span class="small text-secondary d-block">POPULARITY</span>
+                                <strong id="detailFoodPopularity" class="text-white"></strong>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded bg-slate-800 bg-opacity-50 border border-secondary text-center">
+                                <span class="small text-secondary d-block">EST. CALORIES</span>
+                                <strong id="detailFoodCalories" class="text-white">320 kcal</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer admin-modal-footer">
+                    <button id="detailFoodEditLink" class="munch-btn munch-btn-primary py-2 px-4 rounded-pill small"><i class="fa-solid fa-pen-to-square me-1"></i> Edit Dish Details</button>
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
