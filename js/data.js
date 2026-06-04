@@ -166,7 +166,7 @@ const MunchData = {
             rating: 4.3,
             restaurantId: 3,
             category: "Fast Food",
-            image: "https://images.unsplash.com/photo-1598908314732-07113901949e?auto=format&fit=crop&w=500&q=80",
+            image: "https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=500&q=80",
             description: "Half chicken marinated overnight in Empire's secret spice mix, grilled over lava stones, served with dynamic garlic mayonnaise dip.",
             moods: ["Excited", "Happy"],
             study: ["Late Night Study"],
@@ -513,7 +513,7 @@ function initializeMockData() {
 
 // Initialize default store if not exists
 function initStore() {
-    if (!localStorage.getItem("munch_initialized_v11")) {
+    if (!localStorage.getItem("munch_initialized_v12")) {
         // Clear all old keys to ensure a completely fresh start!
         localStorage.removeItem("munch_user");
         localStorage.removeItem("munch_latest_order");
@@ -536,6 +536,7 @@ function initStore() {
         // Populate mock data
         initializeMockData();
         
+        localStorage.setItem("munch_initialized_v12", "true");
         localStorage.setItem("munch_initialized_v11", "true");
         localStorage.setItem("munch_initialized_v10", "true");
         localStorage.setItem("munch_initialized_v9", "true");
@@ -555,15 +556,15 @@ initStore();
 (function() {
     try {
         const currentFoods = JSON.parse(localStorage.getItem("munch_foods"));
-        // Overwrite if foods database is missing or old, or if fresh start v11 is not activated yet
-        if (!currentFoods || currentFoods.length < 18 || !localStorage.getItem("munch_initialized_v11")) {
+        // Overwrite if foods database is missing or old, or if fresh start v12 is not activated yet
+        if (!currentFoods || currentFoods.length < 18 || !localStorage.getItem("munch_initialized_v12")) {
             localStorage.setItem("munch_restaurants", JSON.stringify(MunchData.restaurants));
             localStorage.setItem("munch_foods", JSON.stringify(MunchData.foods));
             
             // Clean slate overrides with mock data
             initializeMockData();
             
-            localStorage.setItem("munch_initialized_v11", "true");
+            localStorage.setItem("munch_initialized_v12", "true");
         }
         
         // Safeguard to initialize order queue if missing
