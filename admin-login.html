@@ -55,7 +55,7 @@
                     <label class="form-label small text-white-50 fw-semibold">ADMIN EMAIL</label>
                     <div class="input-group">
                         <span class="input-group-text bg-transparent border-end-0 text-white-50 border-secondary"><i class="fa-solid fa-user-shield"></i></span>
-                        <input type="email" id="adminEmail" class="form-control border-start-0 munch-input bg-transparent border-secondary text-white w-75" placeholder="staff@munchhub.com" required>
+                        <input type="email" id="adminEmail" class="form-control border-start-0 munch-input bg-transparent border-secondary text-white w-75" placeholder="admin@munchhub.com" required>
                     </div>
                 </div>
 
@@ -118,18 +118,42 @@
                 console.error("Failed to parse munch_admin from localStorage", err);
             }
 
-            // Auto-heal old admin configurations that have no password or have the old email
-            if (storedAdmin && (!storedAdmin.password || storedAdmin.email === "admin@munchhub.edu")) {
-                storedAdmin.email = "staff@munchhub.com";
-                storedAdmin.password = "MunchAdminSecretPass2026!";
+            const defaultEmail = "admin@munchhub.com";
+            const defaultPassword = "MunchAdmin2026!";
+
+            // Auto-heal old admin configurations that have no password, have the old email, or old staff email
+            if (storedAdmin && (!storedAdmin.password || storedAdmin.email === "admin@munchhub.edu" || storedAdmin.email === "staff@munchhub.com")) {
+                storedAdmin.email = defaultEmail;
+                storedAdmin.password = defaultPassword;
                 localStorage.setItem("munch_admin", JSON.stringify(storedAdmin));
             }
 
-            const targetEmail = storedAdmin && storedAdmin.email ? storedAdmin.email : "staff@munchhub.com";
-            const targetPassword = storedAdmin && storedAdmin.password ? storedAdmin.password : "MunchAdminSecretPass2026!";
+            const targetEmail = storedAdmin && storedAdmin.email ? storedAdmin.email : defaultEmail;
+            const targetPassword = storedAdmin && storedAdmin.password ? storedAdmin.password : defaultPassword;
 
-            // Dynamic Validation
-            if (email === targetEmail && password === targetPassword) {
+            const isDynamicMatch = (email === targetEmail && password === targetPassword);
+            const isDefaultMatch = (email === defaultEmail && password === defaultPassword);
+
+            // Validation (Accepts dynamic credentials OR hardcoded default fallback)
+            if (isDynamicMatch || isDefaultMatch) {
+                // If logged in via default fallback but localStorage is still not updated/healed, heal it now!
+                if (!storedAdmin) {
+                    storedAdmin = {
+                        name: "Dean O'Food",
+                        email: defaultEmail,
+                        phone: "+91 90000 12345",
+                        role: "Administrator",
+                        foodsManaged: 26,
+                        ordersHandled: 4,
+                        password: defaultPassword
+                    };
+                    localStorage.setItem("munch_admin", JSON.stringify(storedAdmin));
+                } else if (!storedAdmin.password || storedAdmin.email !== defaultEmail) {
+                    storedAdmin.email = defaultEmail;
+                    storedAdmin.password = defaultPassword;
+                    localStorage.setItem("munch_admin", JSON.stringify(storedAdmin));
+                }
+
                 sessionStorage.setItem("munch_admin_session", "active");
                 showToast("Admin session authenticated successfully!");
                 setTimeout(() => {

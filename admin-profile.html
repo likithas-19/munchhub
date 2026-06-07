@@ -346,7 +346,7 @@
 
                 // 1. Fetch current stored admin from storage to make sure we compare against latest values
                 const currentAdmin = JSON.parse(localStorage.getItem("munch_admin"));
-                const storedPassword = currentAdmin && currentAdmin.password ? currentAdmin.password : "MunchAdminSecretPass2026!";
+                const storedPassword = currentAdmin && currentAdmin.password ? currentAdmin.password : "MunchAdmin2026!";
 
                 // 2. Validate current password
                 if (currentPassInput !== storedPassword) {

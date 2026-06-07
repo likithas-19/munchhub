@@ -525,12 +525,12 @@ function initStore() {
         
         const defaultAdmin = {
             name: "Dean O'Food",
-            email: "staff@munchhub.com",
+            email: "admin@munchhub.com",
             phone: "+91 90000 12345",
             role: "Administrator",
             foodsManaged: 26,
             ordersHandled: 4,
-            password: "MunchAdminSecretPass2026!"
+            password: "MunchAdmin2026!"
         };
         localStorage.setItem("munch_admin", JSON.stringify(defaultAdmin));
         
@@ -576,9 +576,9 @@ initStore();
         // Auto-heal admin credentials in localStorage if they are missing a password or have the outdated email
         try {
             let admin = JSON.parse(localStorage.getItem("munch_admin"));
-            if (admin && (!admin.password || admin.email === "admin@munchhub.edu")) {
-                admin.email = "staff@munchhub.com";
-                admin.password = "MunchAdminSecretPass2026!";
+            if (admin && (!admin.password || admin.email === "admin@munchhub.edu" || admin.email === "staff@munchhub.com")) {
+                admin.email = "admin@munchhub.com";
+                admin.password = "MunchAdmin2026!";
                 localStorage.setItem("munch_admin", JSON.stringify(admin));
             }
         } catch(err) {
