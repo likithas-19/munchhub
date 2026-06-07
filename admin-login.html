@@ -118,6 +118,13 @@
                 console.error("Failed to parse munch_admin from localStorage", err);
             }
 
+            // Auto-heal old admin configurations that have no password or have the old email
+            if (storedAdmin && (!storedAdmin.password || storedAdmin.email === "admin@munchhub.edu")) {
+                storedAdmin.email = "staff@munchhub.com";
+                storedAdmin.password = "MunchAdminSecretPass2026!";
+                localStorage.setItem("munch_admin", JSON.stringify(storedAdmin));
+            }
+
             const targetEmail = storedAdmin && storedAdmin.email ? storedAdmin.email : "staff@munchhub.com";
             const targetPassword = storedAdmin && storedAdmin.password ? storedAdmin.password : "MunchAdminSecretPass2026!";
 
