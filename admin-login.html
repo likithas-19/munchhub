@@ -110,15 +110,26 @@
             const email = document.getElementById("adminEmail").value.trim();
             const password = document.getElementById("adminPassword").value.trim();
 
-            // Secure Admin Credentials Validation
-            if (email === "staff@munchhub.com" && password === "MunchAdminSecretPass2026!") {
+            // Read dynamic credentials from localStorage, falling back to defaults if not found
+            let storedAdmin = null;
+            try {
+                storedAdmin = JSON.parse(localStorage.getItem("munch_admin"));
+            } catch(err) {
+                console.error("Failed to parse munch_admin from localStorage", err);
+            }
+
+            const targetEmail = storedAdmin && storedAdmin.email ? storedAdmin.email : "staff@munchhub.com";
+            const targetPassword = storedAdmin && storedAdmin.password ? storedAdmin.password : "MunchAdminSecretPass2026!";
+
+            // Dynamic Validation
+            if (email === targetEmail && password === targetPassword) {
                 sessionStorage.setItem("munch_admin_session", "active");
                 showToast("Admin session authenticated successfully!");
                 setTimeout(() => {
                     window.location.href = "admin-dashboard.html";
                 }, 1000);
             } else {
-                showToast("Invalid credentials! Use the helper below.", "error");
+                showToast("Invalid credentials! Please try again.", "error");
             }
         });
     </script>

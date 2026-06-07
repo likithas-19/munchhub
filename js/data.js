@@ -513,7 +513,7 @@ function initializeMockData() {
 
 // Initialize default store if not exists
 function initStore() {
-    if (!localStorage.getItem("munch_initialized_v13")) {
+    if (!localStorage.getItem("munch_initialized_v14")) {
         // Clear all old keys to ensure a completely fresh start!
         localStorage.removeItem("munch_user");
         localStorage.removeItem("munch_latest_order");
@@ -525,17 +525,19 @@ function initStore() {
         
         const defaultAdmin = {
             name: "Dean O'Food",
-            email: "admin@munchhub.edu",
+            email: "staff@munchhub.com",
             phone: "+91 90000 12345",
             role: "Administrator",
             foodsManaged: 26,
-            ordersHandled: 4
+            ordersHandled: 4,
+            password: "MunchAdminSecretPass2026!"
         };
         localStorage.setItem("munch_admin", JSON.stringify(defaultAdmin));
         
         // Populate mock data
         initializeMockData();
         
+        localStorage.setItem("munch_initialized_v14", "true");
         localStorage.setItem("munch_initialized_v13", "true");
         localStorage.setItem("munch_initialized_v12", "true");
         localStorage.setItem("munch_initialized_v11", "true");
@@ -543,10 +545,6 @@ function initStore() {
         localStorage.setItem("munch_initialized_v9", "true");
         localStorage.setItem("munch_initialized_v8", "true");
         localStorage.setItem("munch_initialized_v7", "true");
-        localStorage.setItem("munch_initialized_v6", "true");
-        localStorage.setItem("munch_initialized_v5", "true");
-        localStorage.setItem("munch_initialized_v4", "true");
-        localStorage.setItem("munch_initialized_v3", "true");
         localStorage.setItem("munch_initialized", "true");
     }
 }
@@ -557,15 +555,15 @@ initStore();
 (function() {
     try {
         const currentFoods = JSON.parse(localStorage.getItem("munch_foods"));
-        // Overwrite if foods database is missing or old, or if fresh start v13 is not activated yet
-        if (!currentFoods || currentFoods.length < 18 || !localStorage.getItem("munch_initialized_v13")) {
+        // Overwrite if foods database is missing or old, or if fresh start v14 is not activated yet
+        if (!currentFoods || currentFoods.length < 18 || !localStorage.getItem("munch_initialized_v14")) {
             localStorage.setItem("munch_restaurants", JSON.stringify(MunchData.restaurants));
             localStorage.setItem("munch_foods", JSON.stringify(MunchData.foods));
             
             // Clean slate overrides with mock data
             initializeMockData();
             
-            localStorage.setItem("munch_initialized_v13", "true");
+            localStorage.setItem("munch_initialized_v14", "true");
         }
         
         // Safeguard to initialize order queue if missing

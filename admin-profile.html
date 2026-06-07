@@ -185,7 +185,7 @@
                     <div class="card glass-card p-4 text-center mb-4">
                         <div class="admin-avatar-circle rounded-circle shadow border border-danger border-3 d-flex align-items-center justify-content-center bg-danger text-white fw-bold mx-auto mb-3" style="width: 120px; height: 120px; font-size: 3rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">A</div>
                         <h4 class="fw-bold mb-1" id="profileAdminName">Dean O'Food</h4>
-                        <p class="text-muted small mb-3">role.canteen@munchhub.edu</p>
+                        <p class="text-muted small mb-3" id="profileAdminEmail">role.canteen@munchhub.edu</p>
                         <span class="badge bg-danger rounded-pill py-2 px-3 small"><i class="fa-solid fa-shield-halved"></i> Root Administrator</span>
                     </div>
 
@@ -230,6 +230,43 @@
                             </button>
                         </form>
                     </div>
+
+                    <!-- Change Password Card -->
+                    <div class="card glass-card p-4 mt-4">
+                        <h5 class="fw-bold mb-4 text-white"><i class="fa-solid fa-key text-primary"></i> Change Access Security Key / Password</h5>
+                        <form id="adminChangePasswordForm">
+                            <!-- Current Password -->
+                            <div class="mb-3">
+                                <label class="form-label small text-secondary fw-semibold">CURRENT PASSWORD</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-transparent border-end-0 text-white-50 border-secondary"><i class="fa-solid fa-lock"></i></span>
+                                    <input type="password" id="currentPassword" class="form-control border-start-0 border-end-0 munch-input bg-transparent border-secondary text-white" required placeholder="••••••••" style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
+                                    <span class="input-group-text bg-transparent border-start-0 text-white-50 border-secondary cursor-pointer" id="toggleCurrentPasswordBtn" style="border-top-right-radius: 12px; border-bottom-right-radius: 12px; transition: var(--transition-smooth);"><i class="fa-solid fa-eye"></i></span>
+                                </div>
+                            </div>
+                            <!-- New Password -->
+                            <div class="mb-3">
+                                <label class="form-label small text-secondary fw-semibold">NEW PASSWORD (MIN. 8 CHARS)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-transparent border-end-0 text-white-50 border-secondary"><i class="fa-solid fa-key"></i></span>
+                                    <input type="password" id="newPassword" class="form-control border-start-0 border-end-0 munch-input bg-transparent border-secondary text-white" required placeholder="••••••••" style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
+                                    <span class="input-group-text bg-transparent border-start-0 text-white-50 border-secondary cursor-pointer" id="toggleNewPasswordBtn" style="border-top-right-radius: 12px; border-bottom-right-radius: 12px; transition: var(--transition-smooth);"><i class="fa-solid fa-eye"></i></span>
+                                </div>
+                            </div>
+                            <!-- Confirm New Password -->
+                            <div class="mb-4">
+                                <label class="form-label small text-secondary fw-semibold">CONFIRM NEW PASSWORD</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-transparent border-end-0 text-white-50 border-secondary"><i class="fa-solid fa-shield-halved"></i></span>
+                                    <input type="password" id="confirmNewPassword" class="form-control border-start-0 border-end-0 munch-input bg-transparent border-secondary text-white" required placeholder="••••••••" style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
+                                    <span class="input-group-text bg-transparent border-start-0 text-white-50 border-secondary cursor-pointer" id="toggleConfirmNewPasswordBtn" style="border-top-right-radius: 12px; border-bottom-right-radius: 12px; transition: var(--transition-smooth);"><i class="fa-solid fa-eye"></i></span>
+                                </div>
+                            </div>
+                            <button type="submit" class="munch-btn munch-btn-primary w-100 py-3">
+                                <i class="fa-solid fa-shield-halved"></i> Update Password
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </main>
@@ -252,6 +289,9 @@
             document.getElementById("admPhone").value = admin.phone;
             document.getElementById("admRole").value = admin.role;
 
+            // Dynamically show email on the left-hand profile card
+            document.getElementById("profileAdminEmail").innerText = admin.email;
+
             const foods = JSON.parse(localStorage.getItem("munch_foods")) || [];
             const orders = JSON.parse(localStorage.getItem("munch_orders")) || [];
 
@@ -259,7 +299,7 @@
             document.getElementById("profFoodsCount").innerText = foods.length;
             document.getElementById("profOrdersCount").innerText = orders.length;
 
-            // Submit form
+            // Submit form to update details
             document.getElementById("adminEditForm").addEventListener("submit", (e) => {
                 e.preventDefault();
                 admin.name = document.getElementById("admName").value;
@@ -268,11 +308,84 @@
 
                 localStorage.setItem("munch_admin", JSON.stringify(admin));
                 
-                // Update header values
+                // Update header and card values
                 document.getElementById("sidebarAdminName").innerText = admin.name;
                 document.getElementById("profileAdminName").innerText = admin.name;
+                document.getElementById("profileAdminEmail").innerText = admin.email;
 
                 showToast("Admin staff profile updated successfully!");
+            });
+
+            // Toggle password fields visibility
+            const setupPasswordToggle = (btnId, inputId) => {
+                const btn = document.getElementById(btnId);
+                const input = document.getElementById(inputId);
+                if (btn && input) {
+                    btn.addEventListener("click", () => {
+                        const type = input.getAttribute("type") === "password" ? "text" : "password";
+                        input.setAttribute("type", type);
+                        const icon = btn.querySelector("i");
+                        if (icon) {
+                            icon.className = type === "password" ? "fa-solid fa-eye" : "fa-solid fa-eye-slash";
+                        }
+                    });
+                }
+            };
+
+            setupPasswordToggle("toggleCurrentPasswordBtn", "currentPassword");
+            setupPasswordToggle("toggleNewPasswordBtn", "newPassword");
+            setupPasswordToggle("toggleConfirmNewPasswordBtn", "confirmNewPassword");
+
+            // Change Password Submit Logic
+            document.getElementById("adminChangePasswordForm").addEventListener("submit", (e) => {
+                e.preventDefault();
+                
+                const currentPassInput = document.getElementById("currentPassword").value;
+                const newPassInput = document.getElementById("newPassword").value;
+                const confirmPassInput = document.getElementById("confirmNewPassword").value;
+
+                // 1. Fetch current stored admin from storage to make sure we compare against latest values
+                const currentAdmin = JSON.parse(localStorage.getItem("munch_admin"));
+                const storedPassword = currentAdmin && currentAdmin.password ? currentAdmin.password : "MunchAdminSecretPass2026!";
+
+                // 2. Validate current password
+                if (currentPassInput !== storedPassword) {
+                    showToast("Current password is incorrect!", "error");
+                    return;
+                }
+
+                // 3. Validate new password length
+                if (newPassInput.length < 8) {
+                    showToast("New password must be at least 8 characters long!", "error");
+                    return;
+                }
+
+                // 4. Validate new and confirm passwords match
+                if (newPassInput !== confirmPassInput) {
+                    showToast("New password and confirmation do not match!", "error");
+                    return;
+                }
+
+                // 5. Save new password
+                currentAdmin.password = newPassInput;
+                localStorage.setItem("munch_admin", JSON.stringify(currentAdmin));
+
+                // 6. Clear form inputs
+                document.getElementById("currentPassword").value = "";
+                document.getElementById("newPassword").value = "";
+                document.getElementById("confirmNewPassword").value = "";
+
+                // Reset field types back to password
+                document.getElementById("currentPassword").setAttribute("type", "password");
+                document.getElementById("newPassword").setAttribute("type", "password");
+                document.getElementById("confirmNewPassword").setAttribute("type", "password");
+
+                // Reset eye icons
+                document.getElementById("toggleCurrentPasswordBtn").querySelector("i").className = "fa-solid fa-eye";
+                document.getElementById("toggleNewPasswordBtn").querySelector("i").className = "fa-solid fa-eye";
+                document.getElementById("toggleConfirmNewPasswordBtn").querySelector("i").className = "fa-solid fa-eye";
+
+                showToast("Access security key updated successfully!");
             });
         });
     </script>
